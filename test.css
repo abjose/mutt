@@ -1,0 +1,21 @@
+body {padding:0}
+
+#myDiv {
+  width:100px;
+  height:100px;
+  background-color:#666;
+  color:white;
+  padding:0;
+  cursor:move;
+  position:absolute; /* important (all position that's not `static`) */
+}
+
+
+#myCanvas {
+  top:0;
+  left:0;
+  width:500;
+  height:500;
+  padding:none;
+  position:absolute; /* important (all position that's not `static`) */
+}
