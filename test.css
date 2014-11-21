@@ -14,8 +14,6 @@ body {padding:0}
 #myCanvas {
   top:0;
   left:0;
-  width:500;
-  height:500;
   padding:none;
   position:absolute; /* important (all position that's not `static`) */
 }
