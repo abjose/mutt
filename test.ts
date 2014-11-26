@@ -2,8 +2,23 @@ var selected = null,  // Object of the element to be moved
 x_pos = 0, y_pos = 0, // Stores x & y coordinates of the mouse pointer
 x_off = 0, y_off = 0;
 
+// if can keep all matrix library-specific code contained in Point and 
+// Transform, then that would be super
+
+class Point {
+    vec: Array<number>;
+    
+    constructor(x: number, y: number) {
+	this.vec = vec2.fromValues(x, y);
+    }
+    
+    get x() { return this.vec[0]; }
+    get y() { return this.vec[1]; }
+    set x(val: number) { this.vec[0] = val; }
+    set y(val: number) { this.vec[1] = val; }
+}
+
 class Transform {
-    // TODO: caching...
     // translate
     tx: number;
     ty: number;
@@ -13,253 +28,157 @@ class Transform {
     sx: number;
     sy: number;
 
-    translate(x, y) {
+    translate(dx: number, dy: number) {
 	this.tx += dx;
 	this.ty += dy;
     }
 
-    rotate(theta) {
+    rotate(theta: number) {
 	this.theta = theta;
     }
 
-    scale(x, y) {
+    scale(x: number, y: number) {
 	this.sx = x;
 	this.sy = y;
     }
 
-    getTransform() {
-	return mat2d.create()
-	    .translate(T, T, vec2.fromValues(this.tx, this.ty))
-	    .rotate(T, T, this.theta)
-	    .scale(T, T, vec2.fromValues(this.sx, this.sy));
+    add(T: Transform) {
+	// add on another transform...choose a different name...
+	// maybe should return new transform?
+	this.tx += T.tx;
+	this.ty += T.ty;
+	this.sx += T.sx;
+	this.sy += T.sy;
+	this.theta += T.theta;
+	return this;
     }
 
-    transformPoints(pts) {
+    getTransform() {
+	var T =  mat2d.create()
+	mat2d.translate(T, T, vec2.fromValues(this.tx, this.ty))
+	mat2d.rotate(T, T, this.theta)
+	mat2d.scale(T, T, vec2.fromValues(this.sx, this.sy));
+	return T;
+    }
+
+    transformPoints(pts: Point[]) {
 	var T = this.getTransform();
-	new_pts = []
+	var new_pts = []
 	
 	for (var i = 0; i < pts.length; i++) {
-	    new_pts.push(vec2.transformMat2d(vec2.create(), pts[i], T));
+	    var temp_vec = vec2.creat();
+	    vec2.transformMat2d(temp_vec, pts[i], T);
+	    new_pts.push(new Point(temp_vec[0], temp_vec[1]));
 	}
 
 	return new_pts;
     }
 }
 
-interface Component {
-    points: Point[];
-    transform: Transform;
-}
+/*
+What if for now forced entities to be 'primitive' in the sense of
+having a Point array rather than internal entities
+Then get working...
+Then either extend or could have like an EntityGroup which can
+have a list of entities
+STOP
+STOP THINKING ABOUT THIS
+GET WORKING AS PRIMITIVES
+YOU BIG DUMMY
+
+OK, so fine for rect to take in actual coordinates
+but store as point list in Entity
+For now, change Entities to only hold an object of Point[]s
+Entities "what's needed to describe this object, nothing else"
+Styles   "what's needed to actually render in this style, given entity"
+even removing curr_style, etc. for now
+*/
+// interface Component {
+//     points: Point[];
+//     transform: Transform;
+// }
 
 // figure out how to put these in-line
 interface StyleMap { [name: string]: EntityStyle; }
-interface ComponentMap { [name: string]: Component; }
+//interface ComponentMap { [name: string]: Component; }
+interface ComponentMap { [name: string]: any; }
 
-// should just be interfaces?
-// maybe not, can define render abstractly? but will it have access to 
-class Entity {
-    // just keep these in here?
-    contexts;
-    scene;
-
-    curr_style: string;
-    prev_style: string;
-    styles: StyleMap;
-    components: ComponentMap;
+interface Entity {
+    z_index: number;
     transform: Transform;
-
-    constructor(components: Entity[], transform: Transform) {}
-
-    render(scene, contexts) { 
-	this.styles[curr_style].render(this, scene, contexts); //hmmmmm
-    }
-    clear(scene, contexts)  { 
-	this.styles[prev_style].clear(this, scene, contexts);
-    }
-
-    add_style(style: EntityStyle) {}
-    set_style(style: string) {}
+    components: ComponentMap;
 }
-
 interface EntityStyle {
     name: string;
+    // uhh, how to clear if need to get right context? just store
+    //render(entity: Entity, SM: SceneManager, CM: ContextManager): void;
     render(entity: Entity): void;
-    clear(entity: Entity): void;
+    //clear(entity: Entity, SM: SceneManager, CM: ContextManager): void;
+    clear(): void;
 }
 
-class Rectangle extends Entity {
-    constructor(p1, p2, p3, p4) {
-	// pass up description here...
-	component = {'points': [p1, p2, p3, p4]};
-	// pass up...
-	// could add styles here?
+class Rectangle implements Entity {
+    
+    constructor(top_left: Point, bottom_right: Point) {
+	this.components = {
+	    'top_left': top_left,
+	    'bottom_right': bottom_right
+	};
+    }
+
+    // uhh, need to convert point to local coordinates...
+    contains(p: Point) {
+	return (p.x >= this.top_left.x && p.x <= this.bottom_right.x &&
+		p.y >= this.top_left.y && p.y <= this.bottom_right.y)
     }
 }
 
-class CanvasRect extends EntityStyle {
-    name: 'canvas';
 
-    render() {
-	var ele = document.getElementById(this.id);
-	var ctx = ele.getContext('2d');
-	ctx.fillStyle="#00000";
-	ctx.fillRect(this.parent.x, this.parent.y,
-		     this.parent.w, this.parent.h);
-	this.parent.prev_style = 'canvas';
+class CanvasRect implements EntityStyle {
+    name = 'canvas';
+    ctx;
+
+    //constructor(public SM: SceneManager, public CM: ContextManager) {
+    constructor(entity: Entity) {
+	var ele = document.getElementById('myCanvas');
+	this.ctx = ele.getContext('2d');
     }
 
-    clear() {
-	var ele = document.getElementById(this.id);
-	var ctx = ele.getContext('2d');
-	ctx.clearRect(this.parent.x, this.parent.y,
- 	 	      this.parent.w, this.parent.h);
-    }
-}
-
-class DivRect extends EntityStyle {
-    name: 'div';
-
-    render() {
-	this.parent.clear();
-	var ele = document.getElementById(this.id);
-	ele.style.left   = String(this.parent.x) + 'px';
-	ele.style.top    = String(this.parent.y) + 'px';
-	ele.style.width  = String(this.parent.w) + 'px';
-	ele.style.height = String(this.parent.h) + 'px';
-	ele.style.display = 'block';
-	this.parent.prev_style = 'div';
+    render(entity: Entity) {
+	var points = this.entity.components['points'];
+	this.ctx.fillStyle="#00000";
+	this.ctx.fillRect(points[0], points[1], points[2], points[3]);
+	this.entity.prev_style = 'canvas';
     }
 
     clear() {
-	var ele = document.getElementById(this.id);
-	ele.style.display = 'none';
+	ctx.clearRect(points[0], points[1], points[2], points[3]);
     }
 }
 
+class DivRect implements EntityStyle {
+    name = 'div';
+    element: HTMLElement;
 
-var rect = {
-  style: {},
+    constructor() {
+	this.element = document.getElementById('myDiv');
+    }
 
-  x: 10,
-  y: 10,
-  w: 50,
-  h: 50,
+    render(entity: Entity) {
+	var tl = entity.components['top_left'];
+	var br = entity.components['bottom_right'];
+	this.element.style.left   = String(tl.x) + 'px';
+	this.element.style.right  = String(br.x) + 'px';
+	this.element.style.top    = String(tl.y) + 'px';
+	this.element.style.bottom = String(br.y) + 'px';
+	this.element.style.display = 'block';
+	this.entity.prev_style = 'div';
+    }
 
-  curr_style: 'div',
-  prev_style: 'div',
-};
-
-rect.add_style = function() {};
-rect.update_style = function() {};
-rect.contains = function(x, y) {
-  return (x >= this.x && y >= this.y && 
-	  x <= this.x + this.w && y <= this.y + this.h);
-};
-rect.render = function() {
-  this.style[this.curr_style].render();
-};
-rect.clear = function() {
-  this.style[this.prev_style].clear();
+    clear() {
+	this.element.style.display = 'none';
+    }
 }
-
-rect.style.div = {}
-
-rect.style.div.id = 'myDiv';
-rect.style.div.parent = rect; // gross
-
-rect.style.div.render = function() {
-  this.parent.clear();
-  var ele = document.getElementById(this.id);
-  ele.style.left   = String(this.parent.x) + 'px';
-  ele.style.top    = String(this.parent.y) + 'px';
-  ele.style.width  = String(this.parent.w) + 'px';
-  ele.style.height = String(this.parent.h) + 'px';
-  ele.style.display = 'block';
-  this.parent.prev_style = 'div';
-};
-
-rect.style.div.clear = function() {
-  var ele = document.getElementById(this.id);
-  ele.style.display = 'none';
-};
-
-
-rect.style.canvas = {};
-rect.style.canvas.id = 'myCanvas';
-rect.style.canvas.parent = rect; // gross
-rect.style.canvas.render = function() {
-  var ele = document.getElementById(this.id);
-  var ctx = ele.getContext('2d');
-  ctx.fillStyle="#00000";
-  ctx.fillRect(this.parent.x, this.parent.y,
-	       this.parent.w, this.parent.h);
-  this.parent.prev_style = 'canvas';
-};
-
-rect.style.canvas.clear = function() {
-  var ele = document.getElementById(this.id);
-  var ctx = ele.getContext('2d');
-  ctx.clearRect(this.parent.x, this.parent.y,
- 	 	this.parent.w, this.parent.h);
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-// Will be called when user starts dragging an element
-function init_drag(e) {
-  // Store the object of the element which needs to be moved
-  x_pos = document.all ? window.event.clientX : e.pageX;
-  y_pos = document.all ? window.event.clientY : e.pageY;
-  if (rect.contains(x_pos, y_pos)) {
-    selected = rect;
-    x_off = x_pos - selected.x;
-    y_off = y_pos - selected.y;
-  }
-}
-
-// Will be called when user dragging an element
-function move_elem(e) {
-  x_pos = document.all ? window.event.clientX : e.pageX;
-  y_pos = document.all ? window.event.clientY : e.pageY;
-  if (selected !== null) {
-    selected.clear();
-    selected.x = x_pos - x_off;
-    selected.y = y_pos - y_off;
-    selected.render();
-  }
-}
-
-// Destroy the object when we are done
-function end_drag() {
-  selected = null;
-}
-
-
-document.onmousedown = init_drag;
-document.onmousemove = move_elem;
-document.onmouseup = end_drag;
-document.onkeypress = function(e) {
-  var chCode = ('charCode' in e) ? e.charCode : e.keyCode;
-  switch (chCode) {
-  case 49:
-    rect.clear();
-    rect.curr_style = 'div';
-    rect.render();
-    break;
-  case 50:
-    // MAKE IT SO CAN CLEAR AND RENDER IN ONE CALL
-    // LIKE PROBABLY HAVE A SET_POS OR SOMETHING
-    // ALSO A SET_STYLE
-    rect.clear();
-    rect.curr_style = 'canvas';
-    rect.render();
-    break;
-  }
-}
-rect.render();
 
 
 /* TODO
@@ -281,9 +200,20 @@ rect.render();
 - make things into modules and put them in different files
 - get typescript thing for gl-matrix
 - figure out good way to make Point class...(can basically be array?)
+- have a special context object that you can pass a type and layer to and
+  it will return the proper context (or whatever, css setting, etc.) to use
+  for rendering
+- probably want
+  ContextManager
+  InputManager
+  Renderer
+  SceneManager
+  Entity
+  EntityStyle
+
 */
 
-
+/*
 var p1 = vec2.fromValues(0, 0);
 var p2 = vec2.fromValues(1, 0);
 var p3 = vec2.fromValues(0, 1);
@@ -299,3 +229,42 @@ vec2.transformMat2d(p3, p3, m1);
 console.log(p1);
 console.log(p2);
 console.log(p3);
+*/
+
+
+
+// "distant future" example FPM code
+
+
+
+/*
+OK, SIMPLER EXAMPLE:
+mutt.draw('rectangle', ...);
+
+
+need a little toolbox thing
+can click on different tools
+have a few tools - comment, project, edge
+also want to be able to have toolboxes for each tool...
+like for edge, can choose what connector looks like
+toolboxes should 'float' above scene (optionally)
+
+need some functions like set_tool, make_toolbox, ...
+so probably need to model the user...
+As another (view) entity? lolz...
+
+
+
+mutt.init();
+initial_tools = {
+    'line': mutt.click_define(mutt.line),
+    'text': mutt.click_define(mutt.textbox),
+    'proj': mutt.click_define(mutt.view),
+};
+mutt.add(mutt.toolbox(initial_tools));
+user = mutt.user();
+
+
+click toolbar, then can drag out area to make thing...
+could pop up relevant toolbar
+*/
