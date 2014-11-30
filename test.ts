@@ -274,8 +274,9 @@ window.addEventListener('mouseup', function(event) { Key.onMouseup(event); }, fa
 window.addEventListener('mousemove', function(event) { Key.onMouseMove(event); }, false);
 
 var scene = new Scene(500, 500);
-var rect1 = new Rectangle(new Point(50, 50), new Point(100, 100));
-var rect2 = new Rectangle(new Point(150, 150), new Point(175, 200));
+var rect1 = new Rectangle(new Point(50, 50), 100, 100);
+var rect2 = new Rectangle(new Point(150, 150), 50, 75);
+console.log(rect1);
 
 scene.add(rect1);
 scene.add(rect2);
