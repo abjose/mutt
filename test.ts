@@ -44,6 +44,8 @@
   don't worry about order or anything
   or interactivity
 
+  Entities "what's needed to describe this object, nothing else"
+  Styles   "what's needed to actually render in this style, given entity"
 
   OK
   maybe trying to use transformations is stupid
@@ -68,89 +70,12 @@ class Point {
   set y(val: number) { this.vec[1] = val; }
 }
 
-class Transform {
-  // translation
-  tx: number;
-  ty: number;
-  // rotation - in radians
-  theta: number;
-  // scale
-  sx: number;
-  sy: number;
-
-  constructor() {
-    this.tx = 0; this.ty = 0;
-    this.sx = 0; this.sy = 0;
-    this.theta = 0;
-  }
-  
-  translate(x: number, y: number) { this.tx = x; this.ty = y; }
-  rotate(theta: number) { this.theta = theta; }
-  scale(x: number, y: number) { this.sx = x; this.sy = y; }
-
-  add(T: Transform) {
-    // add on another transform...choose a different name...
-    // maybe should return new transform?
-    this.tx += T.tx;
-    this.ty += T.ty;
-    this.sx += T.sx;
-    this.sy += T.sy;
-    this.theta += T.theta;
-    return this;
-  }
-
-  getTransform() {
-    var T =  mat2d.create();
-    // does this work as expected?
-    mat2d.translate(T, T, vec2.fromValues(this.tx, this.ty));
-    mat2d.rotate(T, T, this.theta);
-    mat2d.scale(T, T, vec2.fromValues(this.sx, this.sy));
-    return T;
-  }
-
-  transformPoints(pts: Point[]) {
-    var T = this.getTransform();
-    var new_pts = []
-    
-    for (var i = 0; i < pts.length; i++) {
-      new_pts.push(this.transformPoint(pts[i]));
-    }
-
-    return new_pts;
-  }
-
-  transformPoint(pt: Point, transform?: Transform) {
-    var T = transform || this.getTransform();
-    //var T = this.getTransform();
-    var temp_vec = vec2.fromValues(pt.x, pt.y);
-    vec2.transformMat2d(temp_vec, temp_vec, T);
-    return new Point(temp_vec[0], temp_vec[1]);
-  }
-}
-
-/*
-What if for now forced entities to be 'primitive' in the sense of
-having a Point array rather than internal entities
-Then get working...
-Then either extend or could have like an EntityGroup which can
-have a list of entities
-STOP
-STOP THINKING ABOUT THIS
-GET WORKING AS PRIMITIVES
-YOU BIG DUMMY
-
-OK, so fine for rect to take in actual coordinates
-but store as point list in Entity
-For now, change Entities to only hold an object of Point[]s
-Entities "what's needed to describe this object, nothing else"
-Styles   "what's needed to actually render in this style, given entity"
-even removing curr_style, etc. for now
-*/
 // interface Component {
 //     points: Point[];
 //     transform: Transform;
 // }
 
+// interface EntityGroup {...}
 // figure out how to put these in-line
 interface StyleMap { [name: string]: EntityStyle; }
 //interface ComponentMap { [name: string]: Component; }
@@ -158,7 +83,6 @@ interface ComponentMap { [name: string]: any; }
 
 class Entity {
   z_index: number;
-  transform: Transform;
   components: ComponentMap;
 
   // ok, I guess can try out having style stuff in here...
@@ -180,27 +104,8 @@ class Entity {
     this.styles[this.prev_style].clear(this, scene);
   }
 
-  // ideally change these to not access 'private' properties
-  // setters
-  set x(val: number) { this.transform.tx = val; }
-  set y(val: number) { this.transform.ty = val; }
-  set theta(val: number) { this.transform.rotate(val); }
-  set scale_x(val: number) { this.transform.sx = val; }
-  set scale_y(val: number) { this.transform.sy = val; }
-  // getters
-  get x() { return this.transform.tx; }
-  get y() { return this.transform.ty; }
-  get theta() { return this.transform.theta; }
-  get scale_x() { return this.transform.sx; }
-  get scale_y() { return this.transform.sy; }
-
-  world_to_entity(pt: Point) {
-    
-  }
-
-  entity_to_world(pt: Point) {
-    return this.transform.transformPoint(pt);
-  }
+  world_to_entity(pt: Point) {}
+  entity_to_world(pt: Point) {}
 }
 
 interface EntityStyle {
@@ -208,8 +113,6 @@ interface EntityStyle {
   render(entity: Entity, scene: Scene): void;
   clear(entity: Entity, scene: Scene): void;
 }
-
-
 
 class Rectangle extends Entity {
   
@@ -231,19 +134,16 @@ class Rectangle extends Entity {
    	    pt.y >= top_left.y && pt.y <= bottom_right.y)
    }
 
-  // wait...don't you want to manipulate the transform?
+  get x() { return this.components['top-left'].x; }
+  get y() { return this.components['top-left'].y; }
+  get width() { return Math.abs(this.x - this.components['bottom-right'].x); }
+  get height() { return Math.abs(this.y - this.components['bottom-right'].y); }
 
-  // get x() { return this.components['top-left'].x; }
-  // get y() { return this.components['top-left'].y; }
-  // get width() { return Math.abs(this.x - this.components['bottom-right'].x); }
-  // get height() { return Math.abs(this.y - this.components['bottom-right'].y); }
-
-  // set x(val: number) { this.components['top-left'].x = val; }
-  // set y(val: number) { this.components['top-left'].y = val; }
-  // set width(val: number) { this.components['bottom-right'].x = this.x + val; }
-  // set width(val: number) { this.components['bottom-right'].y = this.y + val; }
+  set x(val: number) { this.components['top-left'].x = val; }
+  set y(val: number) { this.components['top-left'].y = val; }
+  set width(val: number) { this.components['bottom-right'].x = this.x + val; }
+  set width(val: number) { this.components['bottom-right'].y = this.y + val; }
 }
-
 
 class CanvasRect implements EntityStyle {
   name = 'canvas';
@@ -314,8 +214,7 @@ class Scene {
       console.log('dragging!');
       //this.dragged
     }
-  }
- 
+  } 
   
 }
 
