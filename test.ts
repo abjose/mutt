@@ -82,19 +82,13 @@ interface StyleMap { [name: string]: EntityStyle; }
 interface ComponentMap { [name: string]: any; }
 
 class Entity {
-  z_index: number;
-  components: ComponentMap;
+  //z_index: number;
+  //components: ComponentMap;
 
   // ok, I guess can try out having style stuff in here...
   styles: StyleMap;
   prev_style: string;
   curr_style: string;
-
-  constructor(components: ComponentMap) {
-    this.z_index = 0;
-    this.transform = new Transform();
-    this.components = components || {};
-  }
 
   render(scene: Scene) {
     this.styles[this.curr_style].render(this, scene);
@@ -115,10 +109,12 @@ interface EntityStyle {
 }
 
 class Rectangle extends Entity {
-  
-  constructor(top_left: Point, bottom_right: Point) {
-    super({'top-left': top_left, 'bottom-right': bottom_right});
 
+  pt: Point;
+  width: number;
+  height: number;
+  
+  constructor(pt: Point, width: number, height: number) {
     this.styles = {
       'canvas': new CanvasRect(),
     };
@@ -126,47 +122,35 @@ class Rectangle extends Entity {
     this.prev_style = 'canvas';
   }
 
-  // uhh, need to convert point to local coordinates...
   contains(pt: Point) {
-    var top_left = this.components['top-left'];
-    var bottom_right = this.components['bottom-right'];
-    return (pt.x >= top_left.x && pt.x <= bottom_right.x &&
-   	    pt.y >= top_left.y && pt.y <= bottom_right.y)
+    return (pt.x >= this.pt.x && pt.x <= this.pt.x + this.width &&
+   	    pt.y >= this.pt.y && pt.y <= this.pt.y + this.height)
    }
 
-  get x() { return this.components['top-left'].x; }
-  get y() { return this.components['top-left'].y; }
-  get width() { return Math.abs(this.x - this.components['bottom-right'].x); }
-  get height() { return Math.abs(this.y - this.components['bottom-right'].y); }
+  get x() { return this.pt.x; }
+  get y() { return this.pt.y; }
+  get width() { return this.width; }
+  get height() { return this.height; }
 
-  set x(val: number) { this.components['top-left'].x = val; }
-  set y(val: number) { this.components['top-left'].y = val; }
-  set width(val: number) { this.components['bottom-right'].x = this.x + val; }
-  set width(val: number) { this.components['bottom-right'].y = this.y + val; }
+  set x(val: number) { this.pt.x = val; }
+  set y(val: number) { this.pt.y = val; }
+  set width(val: number) { this.width = val; }
+  set height(val: number) { this.height = val; }
 }
 
 class CanvasRect implements EntityStyle {
   name = 'canvas';
 
   render(entity: Entity, scene: Scene) {
-    var tl = entity.components['top-left'];
-    var br = entity.components['bottom-right'];
-    tl = entity.entity_to_world(tl);
-    br = entity.entity_to_world(br);
     scene.ctx.fillStyle="#00000";
-    scene.ctx.fillRect(tl.x, tl.y, br.x-tl.x, br.y-tl.y);
+    scene.ctx.fillRect(entity.x, entity.y, entity.width, entity.height);
     //entity.prev_style = 'canvas';
   }
 
   clear(entity: Entity, scene: Scene) {
-    var tl = entity.components['top-left'];
-    var br = entity.components['bottom-right'];
-    tl = entity.entity_to_world(tl);
-    br = entity.entity_to_world(br);
-    scene.ctx.clearRect(tl.x, tl.y, br.x-tl.x, br.y-tl.y);
+    scene.ctx.clearRect(entity.x, entity.y, entity.width, entity.height);
   }
 }
-
 
 class Scene {
   // maybe scene should contain ContextManager, etc. (i.e. 'practical' rendering
