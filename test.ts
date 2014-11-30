@@ -115,6 +115,12 @@ class Rectangle extends Entity {
   height: number;
   
   constructor(pt: Point, width: number, height: number) {
+    super();
+    
+    this.pt = pt;
+    this.width = width;
+    this.height = height;
+    
     this.styles = {
       'canvas': new CanvasRect(),
     };
@@ -129,26 +135,22 @@ class Rectangle extends Entity {
 
   get x() { return this.pt.x; }
   get y() { return this.pt.y; }
-  get width() { return this.width; }
-  get height() { return this.height; }
 
   set x(val: number) { this.pt.x = val; }
   set y(val: number) { this.pt.y = val; }
-  set width(val: number) { this.width = val; }
-  set height(val: number) { this.height = val; }
 }
 
 class CanvasRect implements EntityStyle {
   name = 'canvas';
 
-  render(entity: Entity, scene: Scene) {
+  render(rect: Rectangle, scene: Scene) {
     scene.ctx.fillStyle="#00000";
-    scene.ctx.fillRect(entity.x, entity.y, entity.width, entity.height);
-    //entity.prev_style = 'canvas';
+    scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    //rect.prev_style = 'canvas';
   }
 
-  clear(entity: Entity, scene: Scene) {
-    scene.ctx.clearRect(entity.x, entity.y, entity.width, entity.height);
+  clear(rect: Rectangle, scene: Scene) {
+    scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
   }
 }
 
