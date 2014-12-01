@@ -29,6 +29,7 @@
 - give entities ability to deal with input stuff
   (like ondragstart, ondrop, ondragover, onclick...)
 - if not going to use transforms, get rid of gl-matrix stuff
+  (like don't need to use vecs in Points)
 */
 
 // if can keep all matrix library-specific code contained in Point and 
@@ -37,13 +38,13 @@
 /// <reference path="gl-matrix.d.ts" />
 
 class Point {
-  vec: Float32Array;
+    vec: Float32Array;
     
-  constructor(x: number, y: number) { this.vec = vec2.fromValues(x, y); }
-  get x() { return this.vec[0]; }
-  get y() { return this.vec[1]; }
-  set x(val: number) { this.vec[0] = val; }
-  set y(val: number) { this.vec[1] = val; }
+    constructor(x: number, y: number) { this.vec = vec2.fromValues(x, y); }
+    get x() { return this.vec[0]; }
+    get y() { return this.vec[1]; }
+    set x(val: number) { this.vec[0] = val; }
+    set y(val: number) { this.vec[1] = val; }
 }
 
 // interface Component {
@@ -58,63 +59,63 @@ interface StyleMap { [name: string]: EntityStyle; }
 interface ComponentMap { [name: string]: any; }
 
 class Entity {
-  //z_index: number;
-  //components: ComponentMap;
+    //z_index: number;
+    //components: ComponentMap;
 
-  // ok, I guess can try out having style stuff in here...
-  styles: StyleMap;
-  prev_style: string;
-  curr_style: string;
+    // ok, I guess can try out having style stuff in here...
+    styles: StyleMap;
+    prev_style: string;
+    curr_style: string;
 
-  render(scene: Scene) {
-    this.styles[this.curr_style].render(this, scene);
-  }
+    render(scene: Scene) {
+	this.styles[this.curr_style].render(this, scene);
+    }
 
-  clear(scene: Scene) {
-    this.styles[this.prev_style].clear(this, scene);
-  }
+    clear(scene: Scene) {
+	this.styles[this.prev_style].clear(this, scene);
+    }
 
-  world_to_entity(pt: Point) {}
-  entity_to_world(pt: Point) {}
+    world_to_entity(pt: Point) {}
+    entity_to_world(pt: Point) {}
 }
 
 interface EntityStyle {
-  name: string;
-  render(entity: Entity, scene: Scene): void;
-  clear(entity: Entity, scene: Scene): void;
-}nnnn
+    name: string;
+    render(entity: Entity, scene: Scene): void;
+    clear(entity: Entity, scene: Scene): void;
+}
 
 class Rectangle extends Entity {
 
-  pt: Point;
-  width: number;
-  height: number;
-  theta: number; //...
-  
-  constructor(pt: Point, width: number, height: number) {
-    super();
+    pt: Point;
+    width: number;
+    height: number;
+    theta: number; //...
     
-    this.pt = pt;
-    this.width = width;
-    this.height = height;
-    
-    this.styles = {
-      'canvas': new CanvasRect(),
-    };
-    this.curr_style = 'canvas';
-    this.prev_style = 'canvas';
-  }
+    constructor(pt: Point, width: number, height: number) {
+	super();
+	
+	this.pt = pt;
+	this.width = width;
+	this.height = height;
+	
+	this.styles = {
+	    'canvas': new CanvasRect(),
+	};
+	this.curr_style = 'canvas';
+	this.prev_style = 'canvas';
+    }
 
-  contains(pt: Point) {
-    return (pt.x >= this.pt.x && pt.x <= this.pt.x + this.width &&
-   	    pt.y >= this.pt.y && pt.y <= this.pt.y + this.height)
-   }
+    contains(pt: Point) {
+	return (pt.x >= this.pt.x && pt.x <= this.pt.x + this.width &&
+   		pt.y >= this.pt.y && pt.y <= this.pt.y + this.height)
+    }
 
-  get x() { return this.pt.x; }
-  get y() { return this.pt.y; }
+    get x() { return this.pt.x; }
+    get y() { return this.pt.y; }
 
-  set x(val: number) { this.pt.x = val; }
-  set y(val: number) { this.pt.y = val; }
+    set x(val: number) { this.pt.x = val; }
+    set y(val: number) { this.pt.y = val; }
 }
 
 class CanvasRect implements EntityStyle {
@@ -132,116 +133,144 @@ class CanvasRect implements EntityStyle {
 }
 
 class Line extends Entity {
-  start: Point;
-  end: Point;
+
+    constructor(public start: Point, public end: Point) {
+	super();
+
+	this.styles = {
+	    'canvas': new CanvasLine(),
+	};
+	this.curr_style = 'canvas';
+	this.prev_style = 'canvas';
+    }
+}
+
+class CanvasLine implements EntityStyle {
+    name = 'canvas';
+
+    render(line: Line, scene: Scene) {
+	scene.ctx.fillStyle="#00000";
+	scene.ctx.beginPath();
+	scene.ctx.moveTo(line.start.x, line.start.y);
+	scene.ctx.lineTo(line.end.x, line.end.y);
+	scene.ctx.stroke();
+	//line.prev_style = 'canvas';
+    }
+
+    clear(line: Line, scene: Scene) {
+	// awk, clears the entire rect
+ 	var width = line.end.x - line.start.x;
+	var height = line.end.y - line.start.y;
+	scene.ctx.clearRect(line.start.x, line.start.y, width, height);
+    }
+
 }
 
 class Scene {
-  // maybe scene should contain ContextManager, etc. (i.e. 'practical' rendering
-  // things)
-  // in which case only need to pass entity and scene to a style to render
+    // maybe scene should contain ContextManager, etc. (i.e. 'practical' rendering
+    // things)
+    // in which case only need to pass entity and scene to a style to render
 
-  entities: Entity[];
-  dragged;
-  ctx;
-  key;
-  off_x;
-  off_y;
-  //cm: ContextManager;
+    entities: Entity[];
+    dragged;
+    ctx;
+    key;
+    off_x;
+    off_y;
+    //cm: ContextManager;
 
-  // remove key...
-  constructor(public width: number, public height: number, key) {
-    // construct canvas context here I guess
-    var ele = document.getElementById('myCanvas');
-    this.entities = [];
-    this.ctx = ele.getContext('2d');
-    dragged = undefined;
-    this.key = key;
-  }
-  
-  add(entity: Entity) {
-    this.entities.push(entity);
-  }
-
-  render() {
-    for (var i=0; i < this.entities.length; i++) {
-      this.entities[i].render(this);
+    // remove key...
+    constructor(public width: number, public height: number, key) {
+	// construct canvas context here I guess
+	var ele = document.getElementById('myCanvas');
+	this.entities = [];
+	this.ctx = ele.getContext('2d');
+	dragged = undefined;
+	this.key = key;
     }
-  }
-
-  clear() {
-    for (var i=0; i < this.entities.length; i++) {
-      this.entities[i].clear(this);
+    
+    add(entity: Entity) {
+	this.entities.push(entity);
     }
-  }
 
-
-  handle_mousedown(pt: Point) {
-    for (var i=0; i < this.entities.length; i++) {
-      if (this.entities[i].contains(pt)) {
-	this.dragged = this.entities[i];
-	this.off_x = this.key.mouse_x - this.dragged.x;
-	this.off_y = this.key.mouse_y - this.dragged.y;
-	break;
-      }
+    render() {
+	for (var i=0; i < this.entities.length; i++) {
+	    this.entities[i].render(this);
+	}
     }
-  }
- 
-  handle_mouseup() {
-    this.dragged = undefined;
-  }
 
-  handle_mousemove() {
-    if (this.dragged !== undefined) {
-      this.clear();
-      this.dragged.x = this.key.mouse_x - this.off_x;
-      this.dragged.y = this.key.mouse_y - this.off_y;
-      this.render();
+    clear() {
+	for (var i=0; i < this.entities.length; i++) {
+	    this.entities[i].clear(this);
+	}
     }
-  } 
+
+    handle_mousedown(pt: Point) {
+	for (var i=0; i < this.entities.length; i++) {
+	    if (this.entities[i].contains && this.entities[i].contains(pt)) {
+		this.dragged = this.entities[i];
+		this.off_x = this.key.mouse_x - this.dragged.x;
+		this.off_y = this.key.mouse_y - this.dragged.y;
+		break;
+	    }
+	}
+    }
+    
+    handle_mouseup() {
+	this.dragged = undefined;
+    }
+
+    handle_mousemove() {
+	if (this.dragged !== undefined) {
+	    this.clear();
+	    this.dragged.x = this.key.mouse_x - this.off_x;
+	    this.dragged.y = this.key.mouse_y - this.off_y;
+	    this.render();
+	}
+    } 
 }
 
 
 // make this a class
 //class InputHandler {
 var Key = {
-  pressed: {},
-  mouse_down: false,
-  mouse_x: 0,
-  mouse_y: 0,
+    pressed: {},
+    mouse_down: false,
+    mouse_x: 0,
+    mouse_y: 0,
 
-  LEFT: 37,
-  UP: 38,
-  RIGHT: 39,
-  DOWN: 40,
-  
-  isKeyDown: function(keyCode) {
-    return this.pressed[keyCode];
-  },
-  
-  onKeydown: function(event) {
-    this.pressed[event.keyCode] = true;
-  },
-  
-  onKeyup: function(event) {
-    delete this.pressed[event.keyCode];
-  },
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+    
+    isKeyDown: function(keyCode) {
+	return this.pressed[keyCode];
+    },
+    
+    onKeydown: function(event) {
+	this.pressed[event.keyCode] = true;
+    },
+    
+    onKeyup: function(event) {
+	delete this.pressed[event.keyCode];
+    },
 
-  onMousedown: function(event) {
-    this.mouse_down = true;
-    scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
-  },
-  
-  onMouseup: function(event) {
-    this.mouse_down = false;
-    scene.handle_mouseup();
-  },
+    onMousedown: function(event) {
+	this.mouse_down = true;
+	scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
+    },
+    
+    onMouseup: function(event) {
+	this.mouse_down = false;
+	scene.handle_mouseup();
+    },
 
-  onMouseMove: function(event) {
-    this.mouse_x = event.clientX;
-    this.mouse_y = event.clientY;
-    scene.handle_mousemove();
-  },
+    onMouseMove: function(event) {
+	this.mouse_x = event.clientX;
+	this.mouse_y = event.clientY;
+	scene.handle_mousemove();
+    },
 }
 window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
@@ -253,10 +282,13 @@ window.addEventListener('mousemove', function(event) { Key.onMouseMove(event); }
 var scene = new Scene(500, 500, Key);
 var rect1 = new Rectangle(new Point(50, 50), 100, 100);
 var rect2 = new Rectangle(new Point(150, 150), 50, 75);
-console.log(rect1);
+var line1 = new Line(new Point(50, 160), new Point(300, 100));
+var line2 = new Line(rect1.pt, rect2.pt);
 
 scene.add(rect1);
 scene.add(rect2);
+scene.add(line1);
+scene.add(line2);
 scene.render();
 
 //rect.x = 4;
