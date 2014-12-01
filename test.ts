@@ -1,8 +1,5 @@
 /* TODO
 - allow more sensible event handling (like if style can handle events itself)
-- try more classical design (TypeScript!)
-  have Entity, EntityStyle (or Type?)
-  have Rect extends Entity, CanvasRect extends EntityStyle
 - add lines, then add a rect made out of lines
 - make little divs that can be dragged to resize
   and little lines around border for changing dims
@@ -12,11 +9,7 @@
   just make a type of rectangle that takes two rectangles as input
   (view and display)
   (should later switch to transforms?)
-- should entity pass transformed points for rendering, or normal points and
-  transform?
 - make things into modules and put them in different files
-- get typescript thing for gl-matrix
-- figure out good way to make Point class...(can basically be array?)
 - have a special context object that you can pass a type and layer to and
   it will return the proper context (or whatever, css setting, etc.) to use
   for rendering
@@ -30,33 +23,17 @@
 - Entity should be a class handling transforms, etc.
   Then specific instances (Rectangle, etc.) will be like 'constraints' to 
   make sure styles render properly
-
-
-- split things into different files?
 - figure out how to automate TS workflow - including compilation, testing
-- represent scene ENTIRELY ABSTRACTLY
-  meaning you can just add, transform, and remove entities
-  maybe in a Scene object (or scenemanager)
-- make tests to ensure that manipulations are happening as expected
-  before you do any rendering
-- get everything to render with canvas...
-  just iterate through scene and render things for now...
-  don't worry about order or anything
-  or interactivity
 
   Entities "what's needed to describe this object, nothing else"
   Styles   "what's needed to actually render in this style, given entity"
 
-  OK
-  maybe trying to use transformations is stupid
-  maybe just store position, width, and height, rotation...
-  and then modify those
-  don't even worry about storing in (abstract)  entity
+  - give entities ability to deal with input stuff
+    (like ondragstart, ondrop, ondragover, onclick...)
 */
 
 // if can keep all matrix library-specific code contained in Point and 
 // Transform, then that would be super
-
 
 /// <reference path="gl-matrix.d.ts" />
 
@@ -106,13 +83,14 @@ interface EntityStyle {
   name: string;
   render(entity: Entity, scene: Scene): void;
   clear(entity: Entity, scene: Scene): void;
-}
+}nnnn
 
 class Rectangle extends Entity {
 
   pt: Point;
   width: number;
   height: number;
+  theta: number; //...
   
   constructor(pt: Point, width: number, height: number) {
     super();
@@ -260,20 +238,6 @@ var Key = {
     this.mouse_y = event.clientY;
     scene.handle_mousemove();
   },
-  
-  /*
-    for dragging...
-    could...store initial and current drag positions?
-    or just have to store currently-dragged entity somewhere
-    but kinda don't like that
-    but that's probably better....
-    could give all entities stuff for dealing with dragging and dropping...
-    have stuff like ondragstart, ondrop, ondragover
-    probably need a variety of things (or at least make simple to add)
-    onclick, etc...
-    well, need to at least add something that will keep track of initial
-    mousedown position for dragging
-  */
 }
 window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
 window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
