@@ -162,14 +162,19 @@ class Scene {
   entities: Entity[];
   dragged;
   ctx;
+  key;
+  off_x;
+  off_y;
   //cm: ContextManager;
 
-  constructor(public width: number, public height: number) {
+  // remove key...
+  constructor(public width: number, public height: number, key) {
     // construct canvas context here I guess
     var ele = document.getElementById('myCanvas');
     this.entities = [];
     this.ctx = ele.getContext('2d');
     dragged = undefined;
+    this.key = key;
   }
   
   add(entity: Entity) {
@@ -182,10 +187,19 @@ class Scene {
     }
   }
 
+  clear() {
+    for (var i=0; i < this.entities.length; i++) {
+      this.entities[i].clear(this);
+    }
+  }
+
+
   handle_mousedown(pt: Point) {
     for (var i=0; i < this.entities.length; i++) {
       if (this.entities[i].contains(pt)) {
 	this.dragged = this.entities[i];
+	this.off_x = this.key.mouse_x - this.dragged.x;
+	this.off_y = this.key.mouse_y - this.dragged.y;
 	break;
       }
     }
@@ -197,11 +211,12 @@ class Scene {
 
   handle_mousemove() {
     if (this.dragged !== undefined) {
-      console.log('dragging!');
-      //this.dragged
+      this.clear();
+      this.dragged.x = this.key.mouse_x - this.off_x;
+      this.dragged.y = this.key.mouse_y - this.off_y;
+      this.render();
     }
   } 
-  
 }
 
 
@@ -210,8 +225,6 @@ class Scene {
 var Key = {
   pressed: {},
   mouse_down: false,
-  mouse_down_x: 0,
-  mouse_down_y: 0,
   mouse_x: 0,
   mouse_y: 0,
 
@@ -233,12 +246,7 @@ var Key = {
   },
 
   onMousedown: function(event) {
-    this.mouse_down_x = event.clientX;
-    this.mouse_x = event.clientX;
-    this.mouse_down_Y = event.clientY;
-    this.mouse_y = event.clientY;
     this.mouse_down = true;
-
     scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
   },
   
@@ -273,7 +281,8 @@ window.addEventListener('mousedown', function(event) { Key.onMousedown(event); }
 window.addEventListener('mouseup', function(event) { Key.onMouseup(event); }, false);
 window.addEventListener('mousemove', function(event) { Key.onMouseMove(event); }, false);
 
-var scene = new Scene(500, 500);
+//var scene = new Scene(500, 500);
+var scene = new Scene(500, 500, Key);
 var rect1 = new Rectangle(new Point(50, 50), 100, 100);
 var rect2 = new Rectangle(new Point(150, 150), 50, 75);
 console.log(rect1);
