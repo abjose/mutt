@@ -24,12 +24,11 @@
   Then specific instances (Rectangle, etc.) will be like 'constraints' to 
   make sure styles render properly
 - figure out how to automate TS workflow - including compilation, testing
-
-  Entities "what's needed to describe this object, nothing else"
+- Entities "what's needed to describe this object, nothing else"
   Styles   "what's needed to actually render in this style, given entity"
-
-  - give entities ability to deal with input stuff
-    (like ondragstart, ondrop, ondragover, onclick...)
+- give entities ability to deal with input stuff
+  (like ondragstart, ondrop, ondragover, onclick...)
+- if not going to use transforms, get rid of gl-matrix stuff
 */
 
 // if can keep all matrix library-specific code contained in Point and 
@@ -119,17 +118,22 @@ class Rectangle extends Entity {
 }
 
 class CanvasRect implements EntityStyle {
-  name = 'canvas';
+    name = 'canvas';
 
-  render(rect: Rectangle, scene: Scene) {
-    scene.ctx.fillStyle="#00000";
-    scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-    //rect.prev_style = 'canvas';
-  }
+    render(rect: Rectangle, scene: Scene) {
+	scene.ctx.fillStyle="#00000";
+	scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+	//rect.prev_style = 'canvas';
+    }
 
-  clear(rect: Rectangle, scene: Scene) {
-    scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-  }
+    clear(rect: Rectangle, scene: Scene) {
+	scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
+    }
+}
+
+class Line extends Entity {
+  start: Point;
+  end: Point;
 }
 
 class Scene {
