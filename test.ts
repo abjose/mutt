@@ -6,9 +6,6 @@
   and still click to drag
 - make an example XML 'document'
 - work on stage/view stuff...
-  just make a type of rectangle that takes two rectangles as input
-  (view and display)
-  (should later switch to transforms?)
 - make things into modules and put them in different files
 - have a special context object that you can pass a type and layer to and
   it will return the proper context (or whatever, css setting, etc.) to use
@@ -62,6 +59,8 @@ class Entity {
     //z_index: number;
     //components: ComponentMap;
 
+    // consider adding ...contains(pt), inside(rect)
+
     // ok, I guess can try out having style stuff in here...
     styles: StyleMap;
     prev_style: string;
@@ -74,9 +73,6 @@ class Entity {
     clear(scene: Scene) {
 	this.styles[this.prev_style].clear(this, scene);
     }
-
-    world_to_entity(pt: Point) {}
-    entity_to_world(pt: Point) {}
 }
 
 interface EntityStyle {
@@ -108,8 +104,19 @@ class Rectangle extends Entity {
 
     contains(pt: Point) {
 	return (pt.x >= this.pt.x && pt.x <= this.pt.x + this.width &&
-   		pt.y >= this.pt.y && pt.y <= this.pt.y + this.height)
+   		pt.y >= this.pt.y && pt.y <= this.pt.y + this.height);
     }
+
+  overlaps(rect: Rectangle) {
+    // find centers
+    var c1 = new Point(this.pt.x + this.width / 2, this.pt.y + this.height / 2);
+    var c2 = new Point(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    // find differences
+    var xdiff = Math.abs(c1.x - c2.x);
+    var ydiff = Math.abs(c1.y - c2.y);
+    return (xdiff < (this.width / 2 + rect.width / 2) &&
+	    ydiff < (this.height / 2 + rect.height / 2))
+  }
 
     get x() { return this.pt.x; }
     get y() { return this.pt.y; }
@@ -143,6 +150,13 @@ class Line extends Entity {
 	this.curr_style = 'canvas';
 	this.prev_style = 'canvas';
     }
+
+  overlaps(rect: Rectangle) {
+    var width = this.end.x - this.start.x;
+    var height = this.end.y - this.start.y;
+    var line_rect = new Rectangle(this.start, width, height);
+    return rect.overlaps(line_rect) || line_rect.overlaps(rect);
+  }
 }
 
 class CanvasLine implements EntityStyle {
@@ -158,8 +172,8 @@ class CanvasLine implements EntityStyle {
     }
 
     clear(line: Line, scene: Scene) {
-	// awk, clears the entire rect
- 	var width = line.end.x - line.start.x;
+        // awk, clears the entire rect
+        var width = line.end.x - line.start.x;
 	var height = line.end.y - line.start.y;
 	scene.ctx.clearRect(line.start.x, line.start.y, width, height);
     }
@@ -167,8 +181,8 @@ class CanvasLine implements EntityStyle {
 }
 
 class Scene {
-    // maybe scene should contain ContextManager, etc. (i.e. 'practical' rendering
-    // things)
+    // maybe scene should contain ContextManager, etc. (i.e. 'practical'
+    // rendering things) 
     // in which case only need to pass entity and scene to a style to render
 
     entities: Entity[];
@@ -193,6 +207,9 @@ class Scene {
 	this.entities.push(entity);
     }
 
+    // SHOULD GET RID OF RENDER AND CLEAR?!
+    // don't think of this as an "active" thing that can be rendered,
+    // but mostly for storage/administration
     render() {
 	for (var i=0; i < this.entities.length; i++) {
 	    this.entities[i].render(this);
@@ -205,6 +222,17 @@ class Scene {
 	}
     }
 
+  getEntities(rect: Rectangle) {
+    // returns all entities in the passed rectangle
+    var overlaps = [];
+    for (var i=0; i < this.entities.length; i++) {
+      if (this.entities[i].overlaps(rect)) {
+	overlaps.push(this.entities[i]);
+      }
+    }
+    return overlaps;
+  }
+  
     handle_mousedown(pt: Point) {
 	for (var i=0; i < this.entities.length; i++) {
 	    if (this.entities[i].contains && this.entities[i].contains(pt)) {
@@ -228,6 +256,50 @@ class Scene {
 	    this.render();
 	}
     } 
+}
+
+
+// just make a type of rectangle that takes two rectangles as input
+// (view and display)
+// (should later switch to transforms?)
+// and then will... just display everything as expected?
+// or could have like a TransparentView which displays things as they want
+// to be
+// and a CanvasView which tries to display things a canvas elements....
+// so basically Scene should just keep track of things, later can have scene
+// have quadtree or something...
+// and...also OK to have Scene contain Scenes?!?!?!??!?!??!?!?!?!
+// in which case scenes need to have location/bounds/etc...
+// maybe scene should be pure list of entities
+// and views are basically selectors for entities
+// so add something on top that lets select what kind of entities to see
+// so I guess intuitively a view is a "scene" and a scene is a...stage?
+class View extends Entity {
+
+  view_rect: Rectangle;
+  render_rect: Rectangle;
+  // only show entities tagged with ....
+  // should make this an object
+  //tags: string[];
+  
+  constructor(view_rect, render_rect, tags) {
+    this.view_rect = view_rect;
+    this.render_rect = render_rect;
+    this.tags = {};
+  }
+}
+
+class TransparentView implements EntityStyle {
+  name = 'transparent';
+
+  render(view: View, scene: Scene) {
+    // query scene, render things...
+    var entites = scene.getEntities(this.view_rect);
+  }
+
+  clear(view: View, scene: Scene) {
+    // query scene, clear things...
+  }
 }
 
 
@@ -283,13 +355,19 @@ var scene = new Scene(500, 500, Key);
 var rect1 = new Rectangle(new Point(50, 50), 100, 100);
 var rect2 = new Rectangle(new Point(150, 150), 50, 75);
 var line1 = new Line(new Point(50, 160), new Point(300, 100));
-var line2 = new Line(rect1.pt, rect2.pt);
+var line2 = new Line(new Point(70, 60), new Point(300, 150));
+var line3 = new Line(rect1.pt, rect2.pt);
 
 scene.add(rect1);
-scene.add(rect2);
+//scene.add(rect2);
 scene.add(line1);
 scene.add(line2);
+//scene.add(line3);
 scene.render();
+
+var testrect = new Rectangle(new Point(0, 0), 100, 100);
+//setInterval(console.log(scene.getEntities(testrect)), 100);
+setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
 
 //rect.x = 4;
 //rect.y = 2;
