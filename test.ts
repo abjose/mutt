@@ -33,6 +33,7 @@
   ehh, maybe makes sense to just use references like this? kinda convenient...
   like the little corner dragging divs...can just share location with the thing
   they're supposed to change the location of
+- what to do about styles when getting transformed copies of things?
 */
 
 // if can keep all matrix library-specific code contained in Point and 
@@ -75,6 +76,7 @@ class Entity {
 
   // consider adding ...contains(pt), inside(rect)
   // move(x, y) or something
+  // getTransformed(...view, render)
 
     // ok, I guess can try out having style stuff in here...
     styles: StyleMap;
@@ -125,6 +127,18 @@ class Rectangle extends Entity {
   move(pt: Point) {
     this.x = pt.x;
     this.y = pt.y;
+  }
+
+  getTransformed(view_rect: Rectangle, render_rect: Rectangle) {
+    // consider returning some other value if too small?
+    var x_scale = view_rect.width / render_rect.width;
+    var y_scale = view_rect.height / render_rect.height;
+    var new_width = this.width * x_scale;
+    var new_height = this.height * y_scale;
+    var new_x = render_rect.x + ((this.x - view_rect.x) * x_scale);
+    var new_y = render_rect.y + ((this.y - view_rect.y) * y_scale);
+
+    return new Rectangle(new Point(new_x, new_y), new_width, new_height);
   }
 
   overlaps(rect: Rectangle) {
@@ -185,6 +199,18 @@ class Line extends Entity {
     this.end.y = pt.y + dy;
   }
 
+  getTransformed(view_rect: Rectangle, render_rect: Rectangle) {
+    var x_scale = view_rect.width / render_rect.width;
+    var y_scale = view_rect.height / render_rect.height;
+    var new_start_x = render_rect.x + ((this.start.x - view_rect.x) * x_scale);
+    var new_start_y = render_rect.y + ((this.start.y - view_rect.y) * y_scale);
+    var new_end_x = render_rect.x + ((this.end.x - view_rect.x) * x_scale);
+    var new_end_y = render_rect.y + ((this.end.y - view_rect.y) * y_scale);
+
+    return new Line(new Point(new_start_x, new_start_y),
+		    new Point(new_end_x, new_end_y));
+  }
+
   overlaps(rect: Rectangle) {
     // see if rect contains either endpoint
     if (rect.contains(this.start)) return true;
@@ -231,6 +257,7 @@ class Line extends Entity {
 
   intersects(line: Line) {
     // return true if this and passed line segment intersect
+    //questions/9043805/test-if-two-lines-intersect-javascript-function
     var CCW = function(p1: Point, p2: Point, p3: Point) {
       return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x);
     }
@@ -374,7 +401,17 @@ class View extends Entity {
   //tags: string[];
   
   constructor(public view_rect: Rectangle, public render_rect: Rectangle) {
+    this.styles = {
+      'transparent': new TransparentView(),
+    };
+    this.curr_style = 'transparent';
+    this.prev_style = 'transparent';
+    
     this.tags = {};
+  }
+
+  overlaps(rect: Rectangle) {
+    return false;
   }
 }
 
@@ -382,11 +419,20 @@ class TransparentView implements EntityStyle {
   name = 'transparent';
 
   render(view: View, scene: Scene) {
-    // query scene, render things...
-    var entites = scene.getEntities(this.view_rect);
+    var transformed; 
+    // RENDER RECT OUTLINE FOR DEBUGGING
+    view.view_rect.render(scene);
 
-    // then just use scene's ctx...and render into certain block?
-    // so should transform everything? or...
+    // query scene, render things...
+    var entities = scene.getEntities(view.view_rect);
+    console.log(entities);
+
+    // render transformed versions of entities
+    for (var i = 0; i < entities.length; i++) {
+      transformed = entities[i].getTransformed(view.view_rect,
+    					       view.render_rect);
+      transformed.render(scene);
+    }
   }
 
   clear(view: View, scene: Scene) {
@@ -454,18 +500,24 @@ var l1 = new Line(new Point(0, 0), new Point(10, 0));
 var p1 = new Point(-15, 5);
 //console.log(l1.nearestPoint(p1));
 
-scene.add(rect1);
+//scene.add(rect1);
 //scene.add(rect2);
 scene.add(line1);
-scene.add(line2);
+//scene.add(line2);
 //scene.add(line3);
-scene.render();
 
+var vr = new Rectangle(new Point(0, 0), 50, 50);
+var rr = new Rectangle(new Point(50, 50), 50, 50);
+var view = new View(vr, rr);
+
+scene.add(view);
+
+scene.render();
 
 
 //var testrect = new Rectangle(new Point(0, 0), 100, 100);
 //setInterval(console.log(scene.getEntities(testrect)), 100);
-setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
+//setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
 
 //rect.x = 4;
 //rect.y = 2;
