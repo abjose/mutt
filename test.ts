@@ -42,6 +42,14 @@ class Point {
     get y() { return this.vec[1]; }
     set x(val: number) { this.vec[0] = val; }
     set y(val: number) { this.vec[1] = val; }
+
+  distance(pt: Point) {
+    return Math.sqrt(this.norm(pt));
+  }
+
+  norm(pt: Point) {
+    return Math.pow(this.x - pt.x, 2) + Math.pow(this.y - pt.y, 2);
+  }
 }
 
 // interface Component {
@@ -59,7 +67,8 @@ class Entity {
     //z_index: number;
     //components: ComponentMap;
 
-    // consider adding ...contains(pt), inside(rect)
+  // consider adding ...contains(pt), inside(rect)
+  // move(x, y) or something
 
     // ok, I guess can try out having style stuff in here...
     styles: StyleMap;
@@ -107,6 +116,11 @@ class Rectangle extends Entity {
    		pt.y >= this.pt.y && pt.y <= this.pt.y + this.height);
     }
 
+  move(pt: Point) {
+    this.x = pt.x;
+    this.y = pt.y;
+  }
+
   overlaps(rect: Rectangle) {
     // find centers
     var c1 = new Point(this.pt.x + this.width / 2, this.pt.y + this.height / 2);
@@ -151,11 +165,52 @@ class Line extends Entity {
 	this.prev_style = 'canvas';
     }
 
+  // uhhh
+  get x() { return this.start.x; }
+  get y() { return this.start.y; }
+
+  move(pt: Point) {
+    var dx = this.end.x - this.start.x;
+    var dy = this.end.y - this.start.y;
+    this.start.x = pt.x;
+    this.start.y = pt.y;
+    this.end.x = pt.x + dx;
+    this.end.y = pt.y + dy;
+  }
+
   overlaps(rect: Rectangle) {
     var width = this.end.x - this.start.x;
     var height = this.end.y - this.start.y;
     var line_rect = new Rectangle(this.start, width, height);
     return rect.overlaps(line_rect) || line_rect.overlaps(rect);
+  }
+
+  contains(pt: Point) {
+    var near_pt = this.nearestPoint(pt);
+    var dist = near_pt.distance(pt);
+    return dist < 5;
+  }
+
+  nearestPoint(pt: Point) {
+    // http://paulbourke.net/geometry/pointlineplane/
+    // return the point on the line segment nearest to 'pt'
+    // oh god please clean this up
+    var x1 = this.start.x;
+    var y1 = this.start.y;
+    var x2 = this.end.x;
+    var y2 = this.end.y;
+    var x3 = pt.x;
+    var y3 = pt.y;
+    var u = ((x3-x1)*(x2-x1) + (y3-y1)*(y2-y1)) / (this.start.norm(this.end))
+    var x = x1 + u*(x2 - x1);
+    var y = y1 + u*(y2 - y1);
+    var xMin = Math.min(x1, x2);
+    var xMax = Math.max(x1, x2);
+    var yMin = Math.min(y1, y2);
+    var yMax = Math.max(y1, y2);
+    x = Math.max(Math.min(x, xMax), xMin);
+    y = Math.max(Math.min(y, yMax), yMin);
+    return new Point(x, y);
   }
 }
 
@@ -250,9 +305,11 @@ class Scene {
 
     handle_mousemove() {
 	if (this.dragged !== undefined) {
-	    this.clear();
-	    this.dragged.x = this.key.mouse_x - this.off_x;
-	    this.dragged.y = this.key.mouse_y - this.off_y;
+	  this.clear();
+	  //this.dragged.x = this.key.mouse_x - this.off_x;
+	  //this.dragged.y = this.key.mouse_y - this.off_y;
+	  this.dragged.move(new Point(this.key.mouse_x - this.off_x,
+				      this.key.mouse_y - this.off_y));
 	    this.render();
 	}
     } 
@@ -330,7 +387,8 @@ var Key = {
 
     onMousedown: function(event) {
 	this.mouse_down = true;
-	scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
+      scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
+      console.log(line1.contains(new Point(this.mouse_x, this.mouse_y)));
     },
     
     onMouseup: function(event) {
@@ -358,6 +416,10 @@ var line1 = new Line(new Point(50, 160), new Point(300, 100));
 var line2 = new Line(new Point(70, 60), new Point(300, 150));
 var line3 = new Line(rect1.pt, rect2.pt);
 
+var l1 = new Line(new Point(0, 0), new Point(10, 0));
+var p1 = new Point(-15, 5);
+console.log(l1.nearestPoint(p1));
+
 scene.add(rect1);
 //scene.add(rect2);
 scene.add(line1);
@@ -365,9 +427,11 @@ scene.add(line2);
 //scene.add(line3);
 scene.render();
 
+
+
 var testrect = new Rectangle(new Point(0, 0), 100, 100);
 //setInterval(console.log(scene.getEntities(testrect)), 100);
-setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
+//setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
 
 //rect.x = 4;
 //rect.y = 2;
