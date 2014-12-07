@@ -30,6 +30,9 @@
 - not sure desired behavior - dragging line, drags all entities too
   considering it was an accident
   at least make sure it's not working in a way that will screw things up later
+  ehh, maybe makes sense to just use references like this? kinda convenient...
+  like the little corner dragging divs...can just share location with the thing
+  they're supposed to change the location of
 */
 
 // if can keep all matrix library-specific code contained in Point and 
@@ -157,6 +160,7 @@ class CanvasRect implements EntityStyle {
 }
 
 class Line extends Entity {
+  // consider storing stuff for parametric representation?
 
     constructor(public start: Point, public end: Point) {
 	super();
@@ -182,16 +186,25 @@ class Line extends Entity {
   }
 
   overlaps(rect: Rectangle) {
-    var width = this.end.x - this.start.x;
-    var height = this.end.y - this.start.y;
-    var line_rect = new Rectangle(this.start, width, height);
-    return rect.overlaps(line_rect) || line_rect.overlaps(rect);
+    // see if rect contains either endpoint
+    if (rect.contains(this.start)) return true;
+    if (rect.contains(this.end)) return true;
+
+    var ul = new Point(rect.x, rect.y);
+    var ur = new Point(rect.x + rect.width, rect.y);
+    var bl = new Point(rect.x, rect.y + rect.height);
+    var br = new Point(rect.x + rect.width, rect.y + rect.height);
+    // see if anything intersects
+    if (this.intersects(new Line(ul, ur))) return true;
+    if (this.intersects(new Line(ur, br))) return true;
+    if (this.intersects(new Line(br, bl))) return true;
+    if (this.intersects(new Line(bl, ul))) return true;
   }
 
   contains(pt: Point) {
     var near_pt = this.nearestPoint(pt);
     var dist = near_pt.distance(pt);
-    return dist < 5;
+    return dist < 3;
   }
 
   nearestPoint(pt: Point) {
@@ -214,6 +227,17 @@ class Line extends Entity {
     x = Math.max(Math.min(x, xMax), xMin);
     y = Math.max(Math.min(y, yMax), yMin);
     return new Point(x, y);
+  }
+
+  intersects(line: Line) {
+    // return true if this and passed line segment intersect
+    var CCW = function(p1: Point, p2: Point, p3: Point) {
+      return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x);
+    }
+    return ((CCW(this.start, line.start, line.end) !=
+	     CCW(this.end, line.start, line.end)) &&
+	    (CCW(this.start, this.end, line.start) !=
+	     CCW(this.start, this.end, line.end)));	    
   }
 }
 
@@ -345,15 +369,11 @@ class Scene {
 // so I guess intuitively a view is a "scene" and a scene is a...stage?
 class View extends Entity {
 
-  view_rect: Rectangle;
-  render_rect: Rectangle;
   // only show entities tagged with ....
   // should make this an object
   //tags: string[];
   
-  constructor(view_rect, render_rect, tags) {
-    this.view_rect = view_rect;
-    this.render_rect = render_rect;
+  constructor(public view_rect: Rectangle, public render_rect: Rectangle) {
     this.tags = {};
   }
 }
@@ -364,6 +384,9 @@ class TransparentView implements EntityStyle {
   render(view: View, scene: Scene) {
     // query scene, render things...
     var entites = scene.getEntities(this.view_rect);
+
+    // then just use scene's ctx...and render into certain block?
+    // so should transform everything? or...
   }
 
   clear(view: View, scene: Scene) {
@@ -400,7 +423,6 @@ var Key = {
     onMousedown: function(event) {
 	this.mouse_down = true;
       scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
-      console.log(line1.contains(new Point(this.mouse_x, this.mouse_y)));
     },
     
     onMouseup: function(event) {
@@ -430,20 +452,20 @@ var line3 = new Line(rect1.pt, rect2.pt);
 
 var l1 = new Line(new Point(0, 0), new Point(10, 0));
 var p1 = new Point(-15, 5);
-console.log(l1.nearestPoint(p1));
+//console.log(l1.nearestPoint(p1));
 
 scene.add(rect1);
-scene.add(rect2);
+//scene.add(rect2);
 scene.add(line1);
 scene.add(line2);
-scene.add(line3);
+//scene.add(line3);
 scene.render();
 
 
 
-var testrect = new Rectangle(new Point(0, 0), 100, 100);
+//var testrect = new Rectangle(new Point(0, 0), 100, 100);
 //setInterval(console.log(scene.getEntities(testrect)), 100);
-//setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
+setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
 
 //rect.x = 4;
 //rect.y = 2;
