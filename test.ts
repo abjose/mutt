@@ -27,6 +27,9 @@
   (like ondragstart, ondrop, ondragover, onclick...)
 - if not going to use transforms, get rid of gl-matrix stuff
   (like don't need to use vecs in Points)
+- not sure desired behavior - dragging line, drags all entities too
+  considering it was an accident
+  at least make sure it's not working in a way that will screw things up later
 */
 
 // if can keep all matrix library-specific code contained in Point and 
@@ -143,7 +146,7 @@ class CanvasRect implements EntityStyle {
     name = 'canvas';
 
     render(rect: Rectangle, scene: Scene) {
-	scene.ctx.fillStyle="#00000";
+	scene.ctx.fillStyle="black";
 	scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 	//rect.prev_style = 'canvas';
     }
@@ -218,19 +221,28 @@ class CanvasLine implements EntityStyle {
     name = 'canvas';
 
     render(line: Line, scene: Scene) {
-	scene.ctx.fillStyle="#00000";
-	scene.ctx.beginPath();
-	scene.ctx.moveTo(line.start.x, line.start.y);
-	scene.ctx.lineTo(line.end.x, line.end.y);
-	scene.ctx.stroke();
-	//line.prev_style = 'canvas';
+      scene.ctx.strokeStyle="black";
+      scene.ctx.lineWidth = 1;
+      scene.ctx.beginPath();
+      scene.ctx.moveTo(line.start.x, line.start.y);
+      scene.ctx.lineTo(line.end.x, line.end.y);
+      scene.ctx.stroke();
+      //line.prev_style = 'canvas';
     }
 
     clear(line: Line, scene: Scene) {
-        // awk, clears the entire rect
-        var width = line.end.x - line.start.x;
-	var height = line.end.y - line.start.y;
-	scene.ctx.clearRect(line.start.x, line.start.y, width, height);
+      // awk, what if not white? always able to access BG color?
+      scene.ctx.strokeStyle = "white";
+      scene.ctx.fillStyle = "white";
+      scene.ctx.lineWidth = 5;
+      scene.ctx.beginPath();
+      scene.ctx.moveTo(line.start.x, line.start.y);
+      scene.ctx.lineTo(line.end.x, line.end.y);
+      scene.ctx.stroke();
+      // also draw circles at begining and end just in case
+      scene.ctx.arc(line.start.x, line.start.y, 5, 0, 2*Math.PI, false);
+      scene.ctx.arc(line.end.x, line.end.y, 5, 0, 2*Math.PI, false);
+      scene.ctx.fill();
     }
 
 }
@@ -421,10 +433,10 @@ var p1 = new Point(-15, 5);
 console.log(l1.nearestPoint(p1));
 
 scene.add(rect1);
-//scene.add(rect2);
+scene.add(rect2);
 scene.add(line1);
 scene.add(line2);
-//scene.add(line3);
+scene.add(line3);
 scene.render();
 
 
