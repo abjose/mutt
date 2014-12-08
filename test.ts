@@ -1,40 +1,42 @@
 /* TODO
-   - allow more sensible event handling (like if style can handle events itself)
-   - add lines, then add a rect made out of lines
-   - make little divs that can be dragged to resize
-   and little lines around border for changing dims
-   and still click to drag
-   - make an example XML 'document'
-   - work on stage/view stuff...
-   - make things into modules and put them in different files
-   - have a special context object that you can pass a type and layer to and
-   it will return the proper context (or whatever, css setting, etc.) to use
-   for rendering
-   - probably want
-   ContextManager
-   InputManager
-   Renderer
-   SceneManager
-   Entity
-   EntityStyle
-   - Entity should be a class handling transforms, etc.
-   Then specific instances (Rectangle, etc.) will be like 'constraints' to 
-   make sure styles render properly
-   - figure out how to automate TS workflow - including compilation, testing
-   - Entities "what's needed to describe this object, nothing else"
-   Styles   "what's needed to actually render in this style, given entity"
-   - give entities ability to deal with input stuff
-   (like ondragstart, ondrop, ondragover, onclick...)
-   - if not going to use transforms, get rid of gl-matrix stuff
-   (like don't need to use vecs in Points)
-   - not sure desired behavior - dragging line, drags all entities too
-   considering it was an accident
-   at least make sure it's not working in a way that will screw things up later
-   ehh, maybe makes sense to just use references like this? kinda convenient...
-   like the little corner dragging divs...can just share location with the thing
-   they're supposed to change the location of
-   - what to do about styles when getting transformed copies of things?
-   - consider using save and restore for canvas operations
+- allow more sensible event handling (like if style can handle events itself)
+- add lines, then add a rect made out of lines
+- make little divs that can be dragged to resize
+and little lines around border for changing dims
+and still click to drag
+- make an example XML 'document'
+- work on stage/view stuff...
+- make things into modules and put them in different files
+- have a special context object that you can pass a type and layer to and
+it will return the proper context (or whatever, css setting, etc.) to use
+for rendering
+- probably want
+ContextManager
+InputManager
+Renderer
+SceneManager
+Entity
+EntityStyle
+- Entity should be a class handling transforms, etc.
+Then specific instances (Rectangle, etc.) will be like 'constraints' to 
+make sure styles render properly
+- figure out how to automate TS workflow - including compilation, testing
+- Entities "what's needed to describe this object, nothing else"
+Styles   "what's needed to actually render in this style, given entity"
+- give entities ability to deal with input stuff
+(like ondragstart, ondrop, ondragover, onclick...)
+- if not going to use transforms, get rid of gl-matrix stuff
+(like don't need to use vecs in Points)
+- not sure desired behavior - dragging line, drags all entities too
+considering it was an accident
+at least make sure it's not working in a way that will screw things up later
+ehh, maybe makes sense to just use references like this? kinda convenient...
+like the little corner dragging divs...can just share location with the thing
+they're supposed to change the location of
+- what to do about styles when getting transformed copies of things?
+- consider using save and restore for canvas operations
+- OH MY GOD MOVE THINGS INTO SEPARATE FILES
+- add something for handling mouse clicks to views??....
 */
 
 // if can keep all matrix library-specific code contained in Point and 
@@ -76,7 +78,7 @@ class Entity {
   //components: ComponentMap;
 
   // consider adding ...contains(pt), inside(rect)
-  // move(x, y) or something
+  // move(x, y) or something (and also getters...or change that)
   // getTransformed(...view, render)
 
   // ok, I guess can try out having style stuff in here...
@@ -132,8 +134,8 @@ class Rectangle extends Entity {
 
   getTransformed(view_rect: Rectangle, render_rect: Rectangle) {
     // consider returning some other value if too small?
-    var x_scale = view_rect.width / render_rect.width;
-    var y_scale = view_rect.height / render_rect.height;
+    var x_scale = render_rect.width / view_rect.width;
+    var y_scale = render_rect.height / view_rect.height;
     var new_width = this.width * x_scale;
     var new_height = this.height * y_scale;
     var new_x = render_rect.x + ((this.x - view_rect.x) * x_scale);
@@ -201,8 +203,8 @@ class Line extends Entity {
   }
 
   getTransformed(view_rect: Rectangle, render_rect: Rectangle) {
-    var x_scale = view_rect.width / render_rect.width;
-    var y_scale = view_rect.height / render_rect.height;
+    var x_scale = render_rect.width / view_rect.width;
+    var y_scale = render_rect.height / view_rect.height;
     var new_start_x = render_rect.x + ((this.start.x - view_rect.x) * x_scale);
     var new_start_y = render_rect.y + ((this.start.y - view_rect.y) * y_scale);
     var new_end_x = render_rect.x + ((this.end.x - view_rect.x) * x_scale);
@@ -400,8 +402,11 @@ class View extends Entity {
   // only show entities tagged with ....
   // should make this an object
   //tags: string[];
+  tags;
   
   constructor(public view_rect: Rectangle, public render_rect: Rectangle) {
+    super();
+    
     this.styles = {
       'transparent': new TransparentView(),
     };
@@ -414,6 +419,17 @@ class View extends Entity {
   overlaps(rect: Rectangle) {
     return false;
   }
+
+  contains(pt: Point) {
+    return this.render_rect.contains(pt);
+  }
+
+  move(pt: Point) {
+    this.render_rect.move(pt);
+  }
+
+  get x() { return this.render_rect.x }
+  get y() { return this.render_rect.y }
 }
 
 class TransparentView implements EntityStyle {
@@ -443,8 +459,9 @@ class TransparentView implements EntityStyle {
 
   clear(view: View, scene: Scene) {
     // just clear clipping region...
-    scene.ctx.clearRect(view.render_rect.x, view.render_rect.y,
-			view.render_rect.width, view.render_rect.height);    
+    // make less hacky
+    scene.ctx.clearRect(view.render_rect.x-1, view.render_rect.y-1,
+			view.render_rect.width+2, view.render_rect.height+2);    
   }
 }
 
@@ -498,7 +515,7 @@ window.addEventListener('mousemove', function(event) { Key.onMouseMove(event); }
 
 //var scene = new Scene(500, 500);
 var scene = new Scene(500, 500, Key);
-var rect1 = new Rectangle(new Point(50, 50), 100, 100);
+var rect1 = new Rectangle(new Point(50, 50), 50, 50);
 var rect2 = new Rectangle(new Point(150, 150), 50, 75);
 var line1 = new Line(new Point(50, 160), new Point(300, 100));
 var line2 = new Line(new Point(70, 60), new Point(300, 150));
@@ -508,14 +525,14 @@ var l1 = new Line(new Point(0, 0), new Point(10, 0));
 var p1 = new Point(-15, 5);
 //console.log(l1.nearestPoint(p1));
 
-//scene.add(rect1);
+scene.add(rect1);
 //scene.add(rect2);
 scene.add(line1);
-//scene.add(line2);
+scene.add(line2);
 //scene.add(line3);
 
-var vr = new Rectangle(new Point(0, 0), 50, 50);
-var rr = new Rectangle(new Point(50, 50), 50, 50);
+var vr = new Rectangle(new Point(0, 0), 100, 100);
+var rr = new Rectangle(new Point(50, 50), 25, 25);
 var view = new View(vr, rr);
 
 scene.add(view);
