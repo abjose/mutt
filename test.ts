@@ -8,8 +8,8 @@ and still click to drag
 - work on stage/view stuff...
 - make things into modules and put them in different files
 - have a special context object that you can pass a type and layer to and
-it will return the proper context (or whatever, css setting, etc.) to use
-for rendering
+  it will return the proper context (or whatever, css setting, etc.) to use
+  for rendering
 - probably want
 ContextManager
 InputManager
@@ -18,40 +18,28 @@ SceneManager
 Entity
 EntityStyle
 - Entity should be a class handling transforms, etc.
-Then specific instances (Rectangle, etc.) will be like 'constraints' to 
-make sure styles render properly
+  Then specific instances (Rectangle, etc.) will be like 'constraints' to 
+  make sure styles render properly
 - figure out how to automate TS workflow - including compilation, testing
 - Entities "what's needed to describe this object, nothing else"
-Styles   "what's needed to actually render in this style, given entity"
+  Styles   "what's needed to actually render in this style, given entity"
 - give entities ability to deal with input stuff
-(like ondragstart, ondrop, ondragover, onclick...)
-- if not going to use transforms, get rid of gl-matrix stuff
-(like don't need to use vecs in Points)
+  (like ondragstart, ondrop, ondragover, onclick...)
 - not sure desired behavior - dragging line, drags all entities too
-considering it was an accident
-at least make sure it's not working in a way that will screw things up later
-ehh, maybe makes sense to just use references like this? kinda convenient...
-like the little corner dragging divs...can just share location with the thing
-they're supposed to change the location of
+  considering it was an accident
+  at least make sure it's not working in a way that will screw things up later
+  ehh, maybe makes sense to just use references like this? kinda convenient...
+  like the little corner dragging divs...can just share location with the thing
+  they're supposed to change the location of
 - what to do about styles when getting transformed copies of things?
 - consider using save and restore for canvas operations
 - OH MY GOD MOVE THINGS INTO SEPARATE FILES
 - add something for handling mouse clicks to views??....
+- make 'clippable' interface that things can implement?
 */
 
-// if can keep all matrix library-specific code contained in Point and 
-// Transform, then that would be super
-
-/// <reference path="gl-matrix.d.ts" />
-
 class Point {
-  vec: Float32Array;
-  
-  constructor(x: number, y: number) { this.vec = vec2.fromValues(x, y); }
-  get x() { return this.vec[0]; }
-  get y() { return this.vec[1]; }
-  set x(val: number) { this.vec[0] = val; }
-  set y(val: number) { this.vec[1] = val; }
+  constructor(public x: number, public y: number) {}
 
   distance(pt: Point) {
     return Math.sqrt(this.norm(pt));
@@ -461,7 +449,7 @@ class TransparentView implements EntityStyle {
     // just clear clipping region...
     // make less hacky
     scene.ctx.clearRect(view.render_rect.x-1, view.render_rect.y-1,
-			view.render_rect.width+2, view.render_rect.height+2);    
+			view.render_rect.width+2, view.render_rect.height+2);
   }
 }
 
