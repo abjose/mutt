@@ -38,263 +38,21 @@ EntityStyle
 - make 'clippable' interface that things can implement?
 */
 
-class Point {
-  constructor(public x: number, public y: number) {}
 
-  distance(pt: Point) {
-    return Math.sqrt(this.norm(pt));
-  }
+/* Import entities and styles */
+/// <reference path="entities/Entity.ts" />
+/// <reference path="entities/Point.ts" />
+/// <reference path="entities/Line.ts" />
+/// <reference path="entities/Rectangle.ts" />
+/// <reference path="entities/View.ts" />
 
-  norm(pt: Point) {
-    return Math.pow(this.x - pt.x, 2) + Math.pow(this.y - pt.y, 2);
-  }
-}
-
-// interface Component {
-//     points: Point[];
-//     transform: Transform;
-// }
-
-// interface EntityGroup {...}
-// figure out how to put these in-line
-interface StyleMap { [name: string]: EntityStyle; }
-//interface ComponentMap { [name: string]: Component; }
-interface ComponentMap { [name: string]: any; }
-
-class Entity {
-  //z_index: number;
-  //components: ComponentMap;
-
-  // consider adding ...contains(pt), inside(rect)
-  // move(x, y) or something (and also getters...or change that)
-  // getTransformed(...view, render)
-
-  // ok, I guess can try out having style stuff in here...
-  styles: StyleMap;
-  prev_style: string;
-  curr_style: string;
-
-  render(scene: Scene) {
-    this.styles[this.curr_style].render(this, scene);
-  }
-
-  clear(scene: Scene) {
-    this.styles[this.prev_style].clear(this, scene);
-  }
-}
-
-interface EntityStyle {
-  name: string;
-  render(entity: Entity, scene: Scene): void;
-  clear(entity: Entity, scene: Scene): void;
-}
-
-class Rectangle extends Entity {
-
-  pt: Point;
-  width: number;
-  height: number;
-  theta: number; //...
-  
-  constructor(pt: Point, width: number, height: number) {
-    super();
-    
-    this.pt = pt;
-    this.width = width;
-    this.height = height;
-    
-    this.styles = {
-      'canvas': new CanvasRect(),
-    };
-    this.curr_style = 'canvas';
-    this.prev_style = 'canvas';
-  }
-
-  contains(pt: Point) {
-    return (pt.x >= this.pt.x && pt.x <= this.pt.x + this.width &&
-   	    pt.y >= this.pt.y && pt.y <= this.pt.y + this.height);
-  }
-
-  move(pt: Point) {
-    this.x = pt.x;
-    this.y = pt.y;
-  }
-
-  getTransformed(view_rect: Rectangle, render_rect: Rectangle) {
-    // consider returning some other value if too small?
-    var x_scale = render_rect.width / view_rect.width;
-    var y_scale = render_rect.height / view_rect.height;
-    var new_width = this.width * x_scale;
-    var new_height = this.height * y_scale;
-    var new_x = render_rect.x + ((this.x - view_rect.x) * x_scale);
-    var new_y = render_rect.y + ((this.y - view_rect.y) * y_scale);
-
-    return new Rectangle(new Point(new_x, new_y), new_width, new_height);
-  }
-
-  overlaps(rect: Rectangle) {
-    // find centers
-    var c1 = new Point(this.pt.x + this.width / 2, this.pt.y + this.height / 2);
-    var c2 = new Point(rect.x + rect.width / 2, rect.y + rect.height / 2);
-    // find differences
-    var xdiff = Math.abs(c1.x - c2.x);
-    var ydiff = Math.abs(c1.y - c2.y);
-    return (xdiff < (this.width / 2 + rect.width / 2) &&
-	    ydiff < (this.height / 2 + rect.height / 2))
-  }
-
-  get x() { return this.pt.x; }
-  get y() { return this.pt.y; }
-
-  set x(val: number) { this.pt.x = val; }
-  set y(val: number) { this.pt.y = val; }
-}
-
-class CanvasRect implements EntityStyle {
-  name = 'canvas';
-
-  render(rect: Rectangle, scene: Scene) {
-    scene.ctx.fillStyle="black";
-    scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-    //rect.prev_style = 'canvas';
-  }
-
-  clear(rect: Rectangle, scene: Scene) {
-    scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
-  }
-}
-
-class Line extends Entity {
-  // consider storing stuff for parametric representation?
-
-  constructor(public start: Point, public end: Point) {
-    super();
-
-    this.styles = {
-      'canvas': new CanvasLine(),
-    };
-    this.curr_style = 'canvas';
-    this.prev_style = 'canvas';
-  }
-
-  // uhhh
-  get x() { return this.start.x; }
-  get y() { return this.start.y; }
-
-  move(pt: Point) {
-    var dx = this.end.x - this.start.x;
-    var dy = this.end.y - this.start.y;
-    this.start.x = pt.x;
-    this.start.y = pt.y;
-    this.end.x = pt.x + dx;
-    this.end.y = pt.y + dy;
-  }
-
-  getTransformed(view_rect: Rectangle, render_rect: Rectangle) {
-    var x_scale = render_rect.width / view_rect.width;
-    var y_scale = render_rect.height / view_rect.height;
-    var new_start_x = render_rect.x + ((this.start.x - view_rect.x) * x_scale);
-    var new_start_y = render_rect.y + ((this.start.y - view_rect.y) * y_scale);
-    var new_end_x = render_rect.x + ((this.end.x - view_rect.x) * x_scale);
-    var new_end_y = render_rect.y + ((this.end.y - view_rect.y) * y_scale);
-
-    return new Line(new Point(new_start_x, new_start_y),
-		    new Point(new_end_x, new_end_y));
-  }
-
-  overlaps(rect: Rectangle) {
-    // see if rect contains either endpoint
-    if (rect.contains(this.start)) return true;
-    if (rect.contains(this.end)) return true;
-
-    var ul = new Point(rect.x, rect.y);
-    var ur = new Point(rect.x + rect.width, rect.y);
-    var bl = new Point(rect.x, rect.y + rect.height);
-    var br = new Point(rect.x + rect.width, rect.y + rect.height);
-    // see if anything intersects
-    if (this.intersects(new Line(ul, ur))) return true;
-    if (this.intersects(new Line(ur, br))) return true;
-    if (this.intersects(new Line(br, bl))) return true;
-    if (this.intersects(new Line(bl, ul))) return true;
-  }
-
-  contains(pt: Point) {
-    var near_pt = this.nearestPoint(pt);
-    var dist = near_pt.distance(pt);
-    return dist < 3;
-  }
-
-  nearestPoint(pt: Point) {
-    // http://paulbourke.net/geometry/pointlineplane/
-    // return the point on the line segment nearest to 'pt'
-    // oh god please clean this up
-    var x1 = this.start.x;
-    var y1 = this.start.y;
-    var x2 = this.end.x;
-    var y2 = this.end.y;
-    var x3 = pt.x;
-    var y3 = pt.y;
-    var u = ((x3-x1)*(x2-x1) + (y3-y1)*(y2-y1)) / (this.start.norm(this.end))
-    var x = x1 + u*(x2 - x1);
-    var y = y1 + u*(y2 - y1);
-    var xMin = Math.min(x1, x2);
-    var xMax = Math.max(x1, x2);
-    var yMin = Math.min(y1, y2);
-    var yMax = Math.max(y1, y2);
-    x = Math.max(Math.min(x, xMax), xMin);
-    y = Math.max(Math.min(y, yMax), yMin);
-    return new Point(x, y);
-  }
-
-  intersects(line: Line) {
-    // return true if this and passed line segment intersect
-    //questions/9043805/test-if-two-lines-intersect-javascript-function
-    var CCW = function(p1: Point, p2: Point, p3: Point) {
-      return (p3.y - p1.y) * (p2.x - p1.x) > (p2.y - p1.y) * (p3.x - p1.x);
-    }
-    return ((CCW(this.start, line.start, line.end) !=
-	     CCW(this.end, line.start, line.end)) &&
-	    (CCW(this.start, this.end, line.start) !=
-	     CCW(this.start, this.end, line.end)));	    
-  }
-}
-
-class CanvasLine implements EntityStyle {
-  name = 'canvas';
-
-  render(line: Line, scene: Scene) {
-    scene.ctx.strokeStyle="black";
-    scene.ctx.lineWidth = 1;
-    scene.ctx.beginPath();
-    scene.ctx.moveTo(line.start.x, line.start.y);
-    scene.ctx.lineTo(line.end.x, line.end.y);
-    scene.ctx.stroke();
-    //line.prev_style = 'canvas';
-  }
-
-  clear(line: Line, scene: Scene) {
-    // awk, what if not white? always able to access BG color?
-    scene.ctx.strokeStyle = "white";
-    scene.ctx.fillStyle = "white";
-    scene.ctx.lineWidth = 5;
-    scene.ctx.beginPath();
-    scene.ctx.moveTo(line.start.x, line.start.y);
-    scene.ctx.lineTo(line.end.x, line.end.y);
-    scene.ctx.stroke();
-    // also draw circles at begining and end just in case
-    scene.ctx.arc(line.start.x, line.start.y, 5, 0, 2*Math.PI, false);
-    scene.ctx.arc(line.end.x, line.end.y, 5, 0, 2*Math.PI, false);
-    scene.ctx.fill();
-  }
-
-}
 
 class Scene {
   // maybe scene should contain ContextManager, etc. (i.e. 'practical'
   // rendering things) 
   // in which case only need to pass entity and scene to a style to render
 
-  entities: Entity[];
+  entities: Entity.Entity[];
   dragged;
   ctx;
   key;
@@ -312,7 +70,7 @@ class Scene {
     this.key = key;
   }
   
-  add(entity: Entity) {
+  add(entity: Entity.Entity) {
     this.entities.push(entity);
   }
 
@@ -331,7 +89,7 @@ class Scene {
     }
   }
 
-  getEntities(rect: Rectangle) {
+  getEntities(rect: Entity.Rectangle) {
     // returns all entities in the passed rectangle
     var overlaps = [];
     for (var i=0; i < this.entities.length; i++) {
@@ -342,7 +100,7 @@ class Scene {
     return overlaps;
   }
   
-  handle_mousedown(pt: Point) {
+  handle_mousedown(pt: Entity.Point) {
     for (var i=0; i < this.entities.length; i++) {
       if (this.entities[i].contains && this.entities[i].contains(pt)) {
 	this.dragged = this.entities[i];
@@ -362,99 +120,16 @@ class Scene {
       this.clear();
       //this.dragged.x = this.key.mouse_x - this.off_x;
       //this.dragged.y = this.key.mouse_y - this.off_y;
-      this.dragged.move(new Point(this.key.mouse_x - this.off_x,
-				  this.key.mouse_y - this.off_y));
+      this.dragged.move(new Entity.Point(this.key.mouse_x - this.off_x,
+					 this.key.mouse_y - this.off_y));
       this.render();
     }
   } 
 }
 
-
-// just make a type of rectangle that takes two rectangles as input
-// (view and display)
-// (should later switch to transforms?)
-// and then will... just display everything as expected?
-// or could have like a TransparentView which displays things as they want
-// to be
-// and a CanvasView which tries to display things a canvas elements....
-// so basically Scene should just keep track of things, later can have scene
-// have quadtree or something...
-// and...also OK to have Scene contain Scenes?!?!?!??!?!??!?!?!?!
-// in which case scenes need to have location/bounds/etc...
-// maybe scene should be pure list of entities
-// and views are basically selectors for entities
-// so add something on top that lets select what kind of entities to see
-// so I guess intuitively a view is a "scene" and a scene is a...stage?
-class View extends Entity {
-
-  // only show entities tagged with ....
-  // should make this an object
-  //tags: string[];
-  tags;
-  
-  constructor(public view_rect: Rectangle, public render_rect: Rectangle) {
-    super();
-    
-    this.styles = {
-      'transparent': new TransparentView(),
-    };
-    this.curr_style = 'transparent';
-    this.prev_style = 'transparent';
-    
-    this.tags = {};
-  }
-
-  overlaps(rect: Rectangle) {
-    return false;
-  }
-
-  contains(pt: Point) {
-    return this.render_rect.contains(pt);
-  }
-
-  move(pt: Point) {
-    this.render_rect.move(pt);
-  }
-
-  get x() { return this.render_rect.x }
-  get y() { return this.render_rect.y }
-}
-
-class TransparentView implements EntityStyle {
-  name = 'transparent';
-
-  render(view: View, scene: Scene) {
-    var transformed; 
-    // set up clipping region
-    // SHOULDN'T HAVE CANVAS SPECIFIC CODE HERE!!
-    scene.ctx.save();
-    scene.ctx.rect(view.render_rect.x, view.render_rect.y,
-		   view.render_rect.width, view.render_rect.height);
-    scene.ctx.stroke();
-    scene.ctx.clip();
-    
-    // query scene and render transformed versions of entities
-    var entities = scene.getEntities(view.view_rect);
-    for (var i = 0; i < entities.length; i++) {
-      transformed = entities[i].getTransformed(view.view_rect,
-					       view.render_rect);
-      transformed.render(scene);
-    }
-
-    // return context to normal
-    scene.ctx.restore();
-  }
-
-  clear(view: View, scene: Scene) {
-    // just clear clipping region...
-    // make less hacky
-    scene.ctx.clearRect(view.render_rect.x-1, view.render_rect.y-1,
-			view.render_rect.width+2, view.render_rect.height+2);
-  }
-}
-
-
 // make this a class
+// or, put this into the User class
+// or...make an InputHandler class and then keep keep ref in User
 //class InputHandler {
 var Key = {
   pressed: {},
@@ -481,7 +156,7 @@ var Key = {
 
   onMousedown: function(event) {
     this.mouse_down = true;
-    scene.handle_mousedown(new Point(this.mouse_x, this.mouse_y));
+    scene.handle_mousedown(new Entity.Point(this.mouse_x, this.mouse_y));
   },
   
   onMouseup: function(event) {
@@ -503,14 +178,17 @@ window.addEventListener('mousemove', function(event) { Key.onMouseMove(event); }
 
 //var scene = new Scene(500, 500);
 var scene = new Scene(500, 500, Key);
-var rect1 = new Rectangle(new Point(50, 50), 50, 50);
-var rect2 = new Rectangle(new Point(150, 150), 50, 75);
-var line1 = new Line(new Point(50, 160), new Point(300, 100));
-var line2 = new Line(new Point(70, 60), new Point(300, 150));
-var line3 = new Line(rect1.pt, rect2.pt);
+var rect1 = new Entity.Rectangle(new Entity.Point(50, 50), 50, 50);
+var rect2 = new Entity.Rectangle(new Entity.Point(150, 150), 50, 75);
+var line1 = new Entity.Line(new Entity.Point(50, 160),
+			    new Entity.Point(300, 100));
+var line2 = new Entity.Line(new Entity.Point(70, 60),
+			    new Entity.Point(300, 150));
+var line3 = new Entity.Line(rect1.pt, rect2.pt);
 
-var l1 = new Line(new Point(0, 0), new Point(10, 0));
-var p1 = new Point(-15, 5);
+var l1 = new Entity.Line(new Entity.Point(0, 0),
+			 new Entity.Point(10, 0));
+var p1 = new Entity.Point(-15, 5);
 //console.log(l1.nearestPoint(p1));
 
 scene.add(rect1);
@@ -519,16 +197,16 @@ scene.add(line1);
 scene.add(line2);
 //scene.add(line3);
 
-var vr = new Rectangle(new Point(0, 0), 100, 100);
-var rr = new Rectangle(new Point(50, 50), 25, 25);
-var view = new View(vr, rr);
+var vr = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
+var rr = new Entity.Rectangle(new Entity.Point(50, 50), 25, 25);
+var view = new Entity.View(vr, rr);
 
 scene.add(view);
 
 scene.render();
 
 
-//var testrect = new Rectangle(new Point(0, 0), 100, 100);
+//var testrect = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
 //setInterval(console.log(scene.getEntities(testrect)), 100);
 //setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
 
