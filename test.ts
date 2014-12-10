@@ -2,8 +2,8 @@
 - allow more sensible event handling (like if style can handle events itself)
 - add lines, then add a rect made out of lines
 - make little divs that can be dragged to resize
-and little lines around border for changing dims
-and still click to drag
+  and little lines around border for changing dims
+  and still click to drag
 - make an example XML 'document'
 - work on stage/view stuff...
 - make things into modules and put them in different files
@@ -11,12 +11,12 @@ and still click to drag
   it will return the proper context (or whatever, css setting, etc.) to use
   for rendering
 - probably want
-ContextManager
-InputManager
-Renderer
-SceneManager
-Entity
-EntityStyle
+  ContextManager
+  InputManager
+  Renderer
+  SceneManager
+  Entity
+  EntityStyle
 - Entity should be a class handling transforms, etc.
   Then specific instances (Rectangle, etc.) will be like 'constraints' to 
   make sure styles render properly
@@ -33,9 +33,9 @@ EntityStyle
   they're supposed to change the location of
 - what to do about styles when getting transformed copies of things?
 - consider using save and restore for canvas operations
-- OH MY GOD MOVE THINGS INTO SEPARATE FILES
 - add something for handling mouse clicks to views??....
 - make 'clippable' interface that things can implement?
+- WRITE ENTITY TESTS!!
 */
 
 
@@ -170,13 +170,17 @@ var Key = {
     scene.handle_mousemove();
   },
 }
-window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
-window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
-window.addEventListener('mousedown', function(event) { Key.onMousedown(event); }, false);
-window.addEventListener('mouseup', function(event) { Key.onMouseup(event); }, false);
-window.addEventListener('mousemove', function(event) { Key.onMouseMove(event); }, false);
+window.addEventListener('keyup',
+			function(event) { Key.onKeyup(event); }, false);
+window.addEventListener('keydown',
+			function(event) { Key.onKeydown(event); }, false);
+window.addEventListener('mousedown',
+			function(event) { Key.onMousedown(event); }, false);
+window.addEventListener('mouseup',
+			function(event) { Key.onMouseup(event); }, false);
+window.addEventListener('mousemove',
+			function(event) { Key.onMouseMove(event); }, false);
 
-//var scene = new Scene(500, 500);
 var scene = new Scene(500, 500, Key);
 var rect1 = new Entity.Rectangle(new Entity.Point(50, 50), 50, 50);
 var rect2 = new Entity.Rectangle(new Entity.Point(150, 150), 50, 75);
@@ -189,27 +193,18 @@ var line3 = new Entity.Line(rect1.pt, rect2.pt);
 var l1 = new Entity.Line(new Entity.Point(0, 0),
 			 new Entity.Point(10, 0));
 var p1 = new Entity.Point(-15, 5);
-//console.log(l1.nearestPoint(p1));
+
+var vr = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
+var rr = new Entity.Rectangle(new Entity.Point(50, 50), 25, 25);
+var view = new Entity.View(vr, rr);
+
 
 scene.add(rect1);
 //scene.add(rect2);
 scene.add(line1);
 scene.add(line2);
 //scene.add(line3);
-
-var vr = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
-var rr = new Entity.Rectangle(new Entity.Point(50, 50), 25, 25);
-var view = new Entity.View(vr, rr);
-
 scene.add(view);
 
+
 scene.render();
-
-
-//var testrect = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
-//setInterval(console.log(scene.getEntities(testrect)), 100);
-//setInterval(function() { console.log(scene.getEntities(rect1)) }, 100);
-
-//rect.x = 4;
-//rect.y = 2;
-//rect.x += 1; // does this work?
