@@ -5,8 +5,6 @@
   and little lines around border for changing dims
   and still click to drag
 - make an example XML 'document'
-- work on stage/view stuff...
-- make things into modules and put them in different files
 - have a special context object that you can pass a type and layer to and
   it will return the proper context (or whatever, css setting, etc.) to use
   for rendering
@@ -36,6 +34,10 @@
 - add something for handling mouse clicks to views??....
 - make 'clippable' interface that things can implement?
 - WRITE ENTITY TESTS!!
+- deal with color / size / etc. in some sensible way - maybe pass parameter
+  object? keep on entity
+- nice to add to_string and from_string methods - will also make copying simpler?
+- maybe useful if have some kind of checksum-maker for a document
 */
 
 
