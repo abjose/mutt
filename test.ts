@@ -36,6 +36,16 @@
 - add something for handling mouse clicks to views??....
 - make 'clippable' interface that things can implement?
 - WRITE ENTITY TESTS!!
+- replace scene (as main rendering component) with view
+- add User
+  have some idea of 'view stack' or something
+  or add some way of addressing Scenes or something (so can be like 'this user
+  is looking at this view, which is at this point in hierarchy...)
+- add InputHandler
+- add Scene (Layer?)
+- get input to work through views??
+  (just implement some kind of view-to-global point translation - could also 
+  use this for rendering? write view-to-global and global-to-view)
 */
 
 
