@@ -127,6 +127,5 @@ module Style {
       scene.ctx.arc(line.end.x, line.end.y, 5, 0, 2*Math.PI, false);
       scene.ctx.fill();
     }
-
   }
 }
