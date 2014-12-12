@@ -12,6 +12,7 @@ module Entity {
   //interface ComponentMap { [name: string]: Component; }
   interface ComponentMap { [name: string]: any; }
 
+  // sure this shouldn't be an interface?
   export class Entity {
     //z_index: number;
     //components: ComponentMap;
@@ -32,6 +33,19 @@ module Entity {
     clear(scene: Scene.Scene) {
       this.styles[this.prev_style].clear(this, scene);
     }
+
+    overlaps(rect: Rectangle) {
+      throw new Error('This method is abstract');
+    }
+
+    contains(pt: Point) {
+      throw new Error('This method is abstract');
+    }
+
+    move(pt: Point) {
+      throw new Error('This method is abstract');
+    }
+
   }
 
  

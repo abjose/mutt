@@ -63,8 +63,7 @@
 /// <reference path="Scene.ts" />
 
 var user = new User.User();
-var scene = new Scene.Scene(500, 500, Key);
-
+var scene = new Scene.Scene(500, 500);
 
 var rect1 = new Entity.Rectangle(new Entity.Point(50, 50), 50, 50);
 var rect2 = new Entity.Rectangle(new Entity.Point(150, 150), 50, 75);
@@ -75,11 +74,9 @@ var line3 = new Entity.Line(rect1.pt, rect2.pt);
 var l1 = new Entity.Line(new Entity.Point(0, 0), new Entity.Point(10, 0));
 var p1 = new Entity.Point(-15, 5);
 
-
 var vr = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
 var rr = new Entity.Rectangle(new Entity.Point(50, 50), 25, 25);
 var view = new Entity.View(vr, rr);
-
 
 scene.add(rect1);
 //scene.add(rect2);

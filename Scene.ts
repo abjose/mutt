@@ -15,13 +15,12 @@ module Scene {
     //cm: ContextManager;
 
     // remove key...
-    constructor(public width: number, public height: number, key) {
+    constructor(public width: number, public height: number) {
       // construct canvas context here I guess
-      var ele = document.getElementById('myCanvas');
+      this.ctx = document.getElementById('myCanvas').getContext('2d');
       this.entities = [];
-      this.ctx = ele.getContext('2d');
-      dragged = undefined;
-      this.key = key;
+      this.dragged = undefined;
+      this.key = undefined;
     }
     
     add(entity: Entity.Entity) {
@@ -45,13 +44,13 @@ module Scene {
 
     getEntities(rect: Entity.Rectangle) {
       // returns all entities in the passed rectangle
-      var overlaps = [];
+      var overlap = [];
       for (var i=0; i < this.entities.length; i++) {
 	if (this.entities[i].overlaps(rect)) {
-	  overlaps.push(this.entities[i]);
+	  overlap.push(this.entities[i]);
 	}
       }
-      return overlaps;
+      return overlap;
     }
     
     handle_mousedown(pt: Entity.Point) {
