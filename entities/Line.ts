@@ -103,7 +103,7 @@ module Style {
   export class CanvasLine implements EntityStyle {
     name = 'canvas';
 
-    render(line: Entity.Line, scene: Scene) {
+    render(line: Entity.Line, scene: Scene.Scene) {
       scene.ctx.strokeStyle="black";
       scene.ctx.lineWidth = 1;
       scene.ctx.beginPath();
@@ -113,7 +113,7 @@ module Style {
       //line.prev_style = 'canvas';
     }
 
-    clear(line: Entity.Line, scene: Scene) {
+    clear(line: Entity.Line, scene: Scene.Scene) {
       // awk, what if not white? always able to access BG color?
       scene.ctx.strokeStyle = "white";
       scene.ctx.fillStyle = "white";

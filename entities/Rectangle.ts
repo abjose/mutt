@@ -69,13 +69,13 @@ module Style {
   export class CanvasRect implements EntityStyle {
     name = 'canvas';
 
-    render(rect: Entity.Rectangle, scene: Scene) {
+    render(rect: Entity.Rectangle, scene: Scene.Scene) {
       scene.ctx.fillStyle="black";
       scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       //rect.prev_style = 'canvas';
     }
 
-    clear(rect: Entity.Rectangle, scene: Scene) {
+    clear(rect: Entity.Rectangle, scene: Scene.Scene) {
       scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
     }
   }
@@ -91,13 +91,13 @@ module Style {
     right: Entity.Line;
     // should really make a polygon thing
 
-    render(rect: Entity.Rectangle, scene: Scene) {
+    render(rect: Entity.Rectangle, scene: Scene.Scene) {
       scene.ctx.fillStyle="black";
       scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       //rect.prev_style = 'canvas';
     }
 
-    clear(rect: Entity.Rectangle, scene: Scene) {
+    clear(rect: Entity.Rectangle, scene: Scene.Scene) {
       scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
     }
   }
@@ -105,24 +105,22 @@ module Style {
   export class DivRect implements EntityStyle {
     name = 'div';
     element: HTMLElement;
-
+    
     constructor() {
-	this.element = document.getElementById('myDiv');
+      this.element = document.getElementById('myDiv');
     }
-
-    render(entity: Entity) {
-	var tl = entity.components['top-left'];
-	var br = entity.components['bottom-right'];
-	this.element.style.left   = String(tl.x) + 'px';
-	this.element.style.right  = String(br.x) + 'px';
-	this.element.style.top    = String(tl.y) + 'px';
-	this.element.style.bottom = String(br.y) + 'px';
-	this.element.style.display = 'block';
-	this.entity.prev_style = 'div';
+    
+    render(rect: Entity.Rectangle, scene: Scene.Scene) {
+      this.element.style.left = String(rect.x) + 'px';
+      this.element.style.top  = String(rect.y) + 'px';
+      this.element.style.width  = String(rect.width) + 'px';
+      this.element.style.height = String(rect.height) + 'px';
+      this.element.style.display = 'block';
+      rect.prev_style = 'div';
     }
-
-    clear() {
-	this.element.style.display = 'none';
+    
+    clear(rect: Entity.Rectangle, scene: Scene.Scene) {
+      this.element.style.display = 'none';
     }
   }
 }

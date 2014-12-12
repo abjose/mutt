@@ -11,15 +11,15 @@ module User {
   
   class InputHandler {
   //var Key = {
-    pressed: {};
-    mouse_down: false;
-    mouse_x: 0;
-    mouse_y: 0;
+    pressed = {};
+    mouse_down = false;
+    mouse_x = 0;
+    mouse_y = 0;
 
-    LEFT: 37;
-    UP: 38;
-    RIGHT: 39;
-    DOWN: 40;
+    LEFT = 37;
+    UP = 38;
+    RIGHT = 39;
+    DOWN = 40;
 
     constructor() {
       // careful about usage of 'this' here - is it correct?

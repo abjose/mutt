@@ -59,7 +59,7 @@ module Style {
   export class TransparentView implements EntityStyle {
     name = 'transparent';
 
-    render(view: Entity.View, scene: Scene) {
+    render(view: Entity.View, scene: Scene.Scene) {
       var transformed; 
       // set up clipping region
       // SHOULDN'T HAVE CANVAS SPECIFIC CODE HERE!!
@@ -81,7 +81,7 @@ module Style {
       scene.ctx.restore();
     }
 
-    clear(view: Entity.View, scene: Scene) {
+    clear(view: Entity.View, scene: Scene.Scene) {
       // just clear clipping region...
       // make less hacky
       scene.ctx.clearRect(view.render_rect.x-1, view.render_rect.y-1,

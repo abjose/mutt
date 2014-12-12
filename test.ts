@@ -62,7 +62,7 @@
 /// <reference path="User.ts" />
 /// <reference path="Scene.ts" />
 
-var user = new User.User(...);
+var user = new User.User();
 var scene = new Scene.Scene(500, 500, Key);
 
 

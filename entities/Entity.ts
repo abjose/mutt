@@ -25,11 +25,11 @@ module Entity {
     prev_style: string;
     curr_style: string;
 
-    render(scene: Scene) {
+    render(scene: Scene.Scene) {
       this.styles[this.curr_style].render(this, scene);
     }
 
-    clear(scene: Scene) {
+    clear(scene: Scene.Scene) {
       this.styles[this.prev_style].clear(this, scene);
     }
   }
@@ -40,7 +40,7 @@ module Entity {
 module Style {
   export interface EntityStyle {
     name: string;
-    render(entity: Entity.Entity, scene: Scene): void;
-    clear(entity: Entity.Entity, scene: Scene): void;
+    render(entity: Entity.Entity, scene: Scene.Scene): void;
+    clear(entity: Entity.Entity, scene: Scene.Scene): void;
   }
 }
