@@ -64,6 +64,7 @@
 
 var user = new User.User();
 var scene = new Scene.Scene(500, 500);
+var IH = new Scene.InputHandler(scene);
 
 var rect1 = new Entity.Rectangle(new Entity.Point(50, 50), 50, 50);
 var rect2 = new Entity.Rectangle(new Entity.Point(150, 150), 50, 75);
