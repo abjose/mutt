@@ -4,6 +4,13 @@
 - make little divs that can be dragged to resize
   and little lines around border for changing dims
   and still click to drag
+  perhaps for this makes sense to have nicer way of building things out of 
+  components - so like if define a polygon as a series of points, easy to 
+  drag them around...
+  or if make rectangle two corners or something...
+  or corners + edges...and keep track of all of them?
+  or easy if edges are built on corners, and know how dragging edges
+  should translate corners and vice-versa...
 - make an example XML 'document'
 - have a special context object that you can pass a type and layer to and
   it will return the proper context (or whatever, css setting, etc.) to use
@@ -49,6 +56,13 @@
 - nice to add to_string and from_string methods - 
   will also make copying simpler?
 - maybe useful if have some kind of checksum-maker for a document
+- perhaps have Scene keep track of style-related stuff entity now keeps track
+  of - like current and previous style for each entity, etc.
+- Make toXML and fromXML (or whatever) another requirement for entities 
+  Then once you've replaced scene rendering with view, you'll be so close! 
+  Can start hooking up with a server. 
+  Maybe for transparent view can have a different internal view for each 
+  tech used? Ideally not, but not sure how to deal with clipping otherwise...
 */
 
 
