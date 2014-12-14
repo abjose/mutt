@@ -63,6 +63,15 @@
   Can start hooking up with a server. 
   Maybe for transparent view can have a different internal view for each 
   tech used? Ideally not, but not sure how to deal with clipping otherwise...
+
+what if basically just pass in objects of identifiers to entities as part of their args, so can represent as JSON doc scene graph
+also could set up callbacks for when each element is modified - will alert owning thing when modified...possible at construction time if given identifier of self
+can also allow constraints like certain points only moving in certain dimensions when direclty manipulated (like trying to drag an edge...)
+and scene graph...
+
+Look up - transforms vs. (?)absolute positioning?
+
+
 */
 
 
@@ -102,3 +111,25 @@ scene.add(view);
 
 
 scene.render();
+
+
+
+/*
+with scene graph and stuff...
+
+
+
+Point 1 1 ID=1
+Point 2 5 ID=2
+Point 3 0 ID=3
+Point 4 4 ID=4
+
+Rectangle 1 4 ID=8 // pass in IDs?
+
+Text "hello how are you doing today?" ID=9
+
+TextBox 8 9
+
+Don't think this is quite what you want....
+
+*/
