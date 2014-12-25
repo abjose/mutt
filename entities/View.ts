@@ -1,4 +1,4 @@
-/// <reference path="../Base.ts" />
+/// <reference path="../base/Base.ts" />
 
 // just make a type of rectangle that takes two rectangles as input
 // (view and display)

@@ -1,4 +1,4 @@
-/// <reference path="../Base.ts" />
+/// <reference path="../base/Base.ts" />
 
 module Entities {
   export class Line extends Base.Entity {

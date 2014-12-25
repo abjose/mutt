@@ -1,9 +1,6 @@
-/// <reference path="Base.ts" />
-/// <reference path="Input.ts" />
-/// <reference path="entities/Point.ts" />
-/// <reference path="entities/Line.ts" />
-/// <reference path="entities/Rectangle.ts" />
-/// <reference path="entities/View.ts" />
+/// <reference path="base/Base.ts" />
+/// <reference path="input/Input.ts" />
+/// <reference path="entities/Entities.ts" />
 
 /* TODO
 - allow more sensible event handling (like if style can handle events itself)

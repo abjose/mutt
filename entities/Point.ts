@@ -1,4 +1,4 @@
-/// <reference path="../Base.ts" />
+/// <reference path="../base/Base.ts" />
 
 module Entities {
   export class Point { // doesn't extend Base.Entity?

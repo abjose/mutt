@@ -1,5 +1,5 @@
 
-/// <reference path="../Base.ts" />
+/// <reference path="../base/Base.ts" />
 
 module Entities {
   export class Rectangle extends Base.Entity {

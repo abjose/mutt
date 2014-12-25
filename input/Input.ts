@@ -1,4 +1,3 @@
-/// <reference path="Base.ts" />
 
 module Input {
 
