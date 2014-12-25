@@ -1,6 +1,4 @@
-
-/// <reference path="Entity.ts" />
-
+/// <reference path="../Base.ts" />
 
 // just make a type of rectangle that takes two rectangles as input
 // (view and display)
@@ -17,9 +15,8 @@
 // and views are basically selectors for entities
 // so add something on top that lets select what kind of entities to see
 // so I guess intuitively a view is a "scene" and a scene is a...stage?
-
-module Entity {
-  export class View extends Entity {
+module Entities {
+  export class View extends Base.Entity {
 
     // only show entities tagged with ....
     // should make this an object
@@ -30,7 +27,7 @@ module Entity {
       super();
       
       this.styles = {
-	'transparent': new Style.TransparentView(),
+	'transparent': new Styles.TransparentView(),
       };
       this.curr_style = 'transparent';
       this.prev_style = 'transparent';
@@ -55,11 +52,11 @@ module Entity {
   }
 }
 
-module Style {
-  export class TransparentView implements EntityStyle {
+module Styles {
+  export class TransparentView implements Base.Style {
     name = 'transparent';
 
-    render(view: Entity.View, scene: Scene.Scene) {
+    render(view: Entities.View, scene: Base.Scene) {
       var transformed; 
       // set up clipping region
       // SHOULDN'T HAVE CANVAS SPECIFIC CODE HERE!!
@@ -81,7 +78,7 @@ module Style {
       scene.ctx.restore();
     }
 
-    clear(view: Entity.View, scene: Scene.Scene) {
+    clear(view: Entities.View, scene: Base.Scene) {
       // just clear clipping region...
       // make less hacky
       scene.ctx.clearRect(view.render_rect.x-1, view.render_rect.y-1,

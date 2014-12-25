@@ -1,8 +1,7 @@
+/// <reference path="../Base.ts" />
 
-/// <reference path="Entity.ts" />
-
-module Entity {
-  export class Point {
+module Entities {
+  export class Point { // doesn't extend Base.Entity?
     constructor(public x: number, public y: number) {}
 
     distance(pt: Point) {

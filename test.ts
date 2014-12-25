@@ -1,3 +1,10 @@
+/// <reference path="Base.ts" />
+/// <reference path="Input.ts" />
+/// <reference path="entities/Point.ts" />
+/// <reference path="entities/Line.ts" />
+/// <reference path="entities/Rectangle.ts" />
+/// <reference path="entities/View.ts" />
+
 /* TODO
 - allow more sensible event handling (like if style can handle events itself)
 - add lines, then add a rect made out of lines
@@ -15,13 +22,6 @@
 - have a special context object that you can pass a type and layer to and
   it will return the proper context (or whatever, css setting, etc.) to use
   for rendering
-- probably want
-  ContextManager
-  InputManager
-  Renderer
-  SceneManager
-  Entity
-  EntityStyle
 - Entity should be a class handling transforms, etc.
   Then specific instances (Rectangle, etc.) will be like 'constraints' to 
   make sure styles render properly
@@ -36,9 +36,6 @@
   ehh, maybe makes sense to just use references like this? kinda convenient...
   like the little corner dragging divs...can just share location with the thing
   they're supposed to change the location of
-- what to do about styles when getting transformed copies of things?
-- consider using save and restore for canvas operations
-- add something for handling mouse clicks to views??....
 - make 'clippable' interface that things can implement?
 - WRITE ENTITY TESTS!!
 - replace scene (as main rendering component) with view
@@ -64,43 +61,47 @@
   Maybe for transparent view can have a different internal view for each 
   tech used? Ideally not, but not sure how to deal with clipping otherwise...
 
-what if basically just pass in objects of identifiers to entities as part of their args, so can represent as JSON doc scene graph
-also could set up callbacks for when each element is modified - will alert owning thing when modified...possible at construction time if given identifier of self
-can also allow constraints like certain points only moving in certain dimensions when direclty manipulated (like trying to drag an edge...)
-and scene graph...
+- DON'T THROW THE BABY OUT WITH THE BATHWATER
+- add IDs? (pass to entity when constructed?)
+- add more scene stuff... (for handling IDs, etc.)
+- add more user stuff
+- add hierarchicalness
+- add transforms
+- add callbacks (as mixin?)
+- make input handling less dumb
 
-Look up - transforms vs. (?)absolute positioning?
-
+- Sure this will be well-suited to working with sockets / server-side stuff?
+  How to make robust to user screwing with things too much?
+  Honestly doesn't matter if screwing with things...as long as can't screw
+  with other people's things when they shouldn't be able to.
+- maybe add a 'base' module, in which Scene, User, Entity, Style, Transform, ...
+  are?
 
 */
 
 
-/* Import entities and styles */
-/// <reference path="entities/Entity.ts" />
-/// <reference path="entities/Point.ts" />
-/// <reference path="entities/Line.ts" />
-/// <reference path="entities/Rectangle.ts" />
-/// <reference path="entities/View.ts" />
-/* Import other stuff */
-/// <reference path="User.ts" />
-/// <reference path="Scene.ts" />
+// class CallBacked {
+//   callbacks; // maps names to list of functions
+//   add_callback(name, fn); // add to callbacks
+//   // could also verify callback is allowed?
+//   // i.e. should init callbacks with possible callback names, can't add
+//   // new ones externally...
+//   execute_callbacks(name, params); // execute all associated callbacks...
+// }
 
-var user = new User.User();
-var scene = new Scene.Scene(500, 500);
-var IH = new Scene.InputHandler(scene);
+var user = new Base.User();
+var scene = new Base.Scene(500, 500);
+var IH = new Input.InputHandler(scene);
 
-var rect1 = new Entity.Rectangle(new Entity.Point(50, 50), 50, 50);
-var rect2 = new Entity.Rectangle(new Entity.Point(150, 150), 50, 75);
-var line1 = new Entity.Line(new Entity.Point(50,90), new Entity.Point(300,100));
-var line2 = new Entity.Line(new Entity.Point(70,40), new Entity.Point(300,150));
-var line3 = new Entity.Line(rect1.pt, rect2.pt);
+var rect1 = new Entities.Rectangle(new Entities.Point(50, 50), 50, 50);
+var rect2 = new Entities.Rectangle(new Entities.Point(150, 150), 50, 75);
+var line1 = new Entities.Line(new Entities.Point(50,90), new Entities.Point(300,100));
+var line2 = new Entities.Line(new Entities.Point(70,40), new Entities.Point(300,150));
+var line3 = new Entities.Line(rect1.pt, rect2.pt);
 
-var l1 = new Entity.Line(new Entity.Point(0, 0), new Entity.Point(10, 0));
-var p1 = new Entity.Point(-15, 5);
-
-var vr = new Entity.Rectangle(new Entity.Point(0, 0), 100, 100);
-var rr = new Entity.Rectangle(new Entity.Point(50, 50), 25, 25);
-var view = new Entity.View(vr, rr);
+var vr = new Entities.Rectangle(new Entities.Point(0, 0), 100, 100);
+var rr = new Entities.Rectangle(new Entities.Point(50, 50), 25, 25);
+var view = new Entities.View(vr, rr);
 
 scene.add(rect1);
 //scene.add(rect2);
@@ -111,25 +112,3 @@ scene.add(view);
 
 
 scene.render();
-
-
-
-/*
-with scene graph and stuff...
-
-
-
-Point 1 1 ID=1
-Point 2 5 ID=2
-Point 3 0 ID=3
-Point 4 4 ID=4
-
-Rectangle 1 4 ID=8 // pass in IDs?
-
-Text "hello how are you doing today?" ID=9
-
-TextBox 8 9
-
-Don't think this is quite what you want....
-
-*/

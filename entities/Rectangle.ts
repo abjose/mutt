@@ -1,8 +1,8 @@
 
-/// <reference path="Entity.ts" />
+/// <reference path="../Base.ts" />
 
-module Entity {
-  export class Rectangle extends Entity {
+module Entities {
+  export class Rectangle extends Base.Entity {
 
     pt: Point;
     width: number;
@@ -17,7 +17,7 @@ module Entity {
       this.height = height;
       
       this.styles = {
-	'canvas': new Style.CanvasRect(),
+	'canvas': new Styles.CanvasRect(),
       };
       this.curr_style = 'canvas';
       this.prev_style = 'canvas';
@@ -65,44 +65,44 @@ module Entity {
   
 }
 
-module Style {
-  export class CanvasRect implements EntityStyle {
+module Styles {
+  export class CanvasRect implements Base.Style {
     name = 'canvas';
 
-    render(rect: Entity.Rectangle, scene: Scene.Scene) {
+    render(rect: Entities.Rectangle, scene: Base.Scene) {
       scene.ctx.fillStyle="black";
       scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       //rect.prev_style = 'canvas';
     }
 
-    clear(rect: Entity.Rectangle, scene: Scene.Scene) {
+    clear(rect: Entities.Rectangle, scene: Base.Scene) {
       scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
     }
   }
 
-  export class LineRect implements EntityStyle {
+  export class LineRect implements Base.Style {
     // just for fun
     // how to spec what style each subcomponent should be?
     // actually seems not right to have raw entities in here - they should be styles?
     name = 'canvas';
-    top: Entity.Line;
-    left: Entity.Line;
-    bottom: Entity.Line;
-    right: Entity.Line;
+    top: Entities.Line;
+    left: Entities.Line;
+    bottom: Entities.Line;
+    right: Entities.Line;
     // should really make a polygon thing
 
-    render(rect: Entity.Rectangle, scene: Scene.Scene) {
+    render(rect: Entities.Rectangle, scene: Base.Scene) {
       scene.ctx.fillStyle="black";
       scene.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       //rect.prev_style = 'canvas';
     }
 
-    clear(rect: Entity.Rectangle, scene: Scene.Scene) {
+    clear(rect: Entities.Rectangle, scene: Base.Scene) {
       scene.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
     }
   }
 
-  export class DivRect implements EntityStyle {
+  export class DivRect implements Base.Style {
     name = 'div';
     element: HTMLElement;
     
@@ -110,7 +110,7 @@ module Style {
       this.element = document.getElementById('myDiv');
     }
     
-    render(rect: Entity.Rectangle, scene: Scene.Scene) {
+    render(rect: Entities.Rectangle, scene: Base.Scene) {
       this.element.style.left = String(rect.x) + 'px';
       this.element.style.top  = String(rect.y) + 'px';
       this.element.style.width  = String(rect.width) + 'px';
@@ -119,7 +119,7 @@ module Style {
       rect.prev_style = 'div';
     }
     
-    clear(rect: Entity.Rectangle, scene: Scene.Scene) {
+    clear(rect: Entities.Rectangle, scene: Base.Scene) {
       this.element.style.display = 'none';
     }
   }

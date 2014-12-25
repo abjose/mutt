@@ -1,15 +1,14 @@
+/// <reference path="../Base.ts" />
 
-/// <reference path="Entity.ts" />
-
-module Entity {
-  export class Line extends Entity {
+module Entities {
+  export class Line extends Base.Entity {
     // consider storing stuff for parametric representation?
 
     constructor(public start: Point, public end: Point) {
       super();
 
       this.styles = {
-	'canvas': new Style.CanvasLine(),
+	'canvas': new Styles.CanvasLine(),
       };
       this.curr_style = 'canvas';
       this.prev_style = 'canvas';
@@ -99,11 +98,11 @@ module Entity {
 }
 
 
-module Style {
-  export class CanvasLine implements EntityStyle {
+module Styles {
+  export class CanvasLine implements Base.Style {
     name = 'canvas';
 
-    render(line: Entity.Line, scene: Scene.Scene) {
+    render(line: Entities.Line, scene: Base.Scene) {
       scene.ctx.strokeStyle="black";
       scene.ctx.lineWidth = 1;
       scene.ctx.beginPath();
@@ -113,7 +112,7 @@ module Style {
       //line.prev_style = 'canvas';
     }
 
-    clear(line: Entity.Line, scene: Scene.Scene) {
+    clear(line: Entities.Line, scene: Base.Scene) {
       // awk, what if not white? always able to access BG color?
       scene.ctx.strokeStyle = "white";
       scene.ctx.fillStyle = "white";
