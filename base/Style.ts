@@ -1,4 +1,3 @@
-/// <reference path="Entity.ts" />
 
 module Base {
 

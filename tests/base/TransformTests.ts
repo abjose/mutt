@@ -1,6 +1,3 @@
-/// <reference path="../../libs/tsUnit.ts" />
-/// <reference path="../../base/Transform.ts" />
-/// <reference path="../../entities/Point.ts" />
 
 module Tests {
   export class CreationTests extends tsUnit.TestClass {

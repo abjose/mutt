@@ -1,7 +1,3 @@
-/// <reference path="../base/Entity.ts" />
-/// <reference path="../base/Style.ts" />
-/// <reference path="Point.ts" />
-/// <reference path="Line.ts" />
 
 module Entities {
   export class Rectangle extends Base.Entity {

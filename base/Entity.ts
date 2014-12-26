@@ -1,11 +1,8 @@
-/// <reference path="Style.ts" />
-/// <reference path="Scene.ts" />
-/// <reference path="../entities/Rectangle.ts" />
-/// <reference path="../entities/Point.ts" />
 
 module Base {
   // figure out how to put these in-line
-  interface StyleMap { [name: string]: Style; }
+  //interface StyleMap { [name: string]: Style; }
+  interface StyleMap { [name: string]: any; }
   interface EntityMap { [name: string]: Entity; }
 
   // sure this shouldn't be an interface?

@@ -1,5 +1,3 @@
-/// <reference path="../libs/gl-matrix.d.ts" />
-/// <reference path="../entities/Point.ts" />
 
 module Base {
   /* TODO

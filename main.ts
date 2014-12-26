@@ -1,10 +1,14 @@
+/// <reference path="libs/gl-matrix.d.ts" />
+/// <reference path="base/Entity.ts" />
 /// <reference path="base/Scene.ts" />
+/// <reference path="base/Style.ts" />
+/// <reference path="base/Transform.ts" />
 /// <reference path="base/User.ts" />
-/// <reference path="entities/Line.ts" />
-/// <reference path="entities/Rectangle.ts" />
-/// <reference path="entities/Point.ts" />
-/// <reference path="entities/View.ts" />
 /// <reference path="input/Input.ts" />
+/// <reference path="entities/Line.ts" />
+/// <reference path="entities/Point.ts" />
+/// <reference path="entities/Rectangle.ts" />
+/// <reference path="entities/View.ts" />
 
 /* TODO
 - allow more sensible event handling (like if style can handle events itself)
