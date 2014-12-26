@@ -1,4 +1,8 @@
-/// <reference path="../base/Base.ts" />
+/// <reference path="../base/Entity.ts" />
+/// <reference path="../base/Style.ts" />
+/// <reference path="Point.ts" />
+/// <reference path="Rectangle.ts" />
+
 
 // just make a type of rectangle that takes two rectangles as input
 // (view and display)

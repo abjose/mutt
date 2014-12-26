@@ -1,3 +1,7 @@
+/// <reference path="Style.ts" />
+/// <reference path="Scene.ts" />
+/// <reference path="../entities/Rectangle.ts" />
+/// <reference path="../entities/Point.ts" />
 
 module Base {
   // figure out how to put these in-line
