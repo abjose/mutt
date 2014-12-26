@@ -1,6 +1,10 @@
-/// <reference path="base/Base.ts" />
+/// <reference path="base/Scene.ts" />
+/// <reference path="base/User.ts" />
+/// <reference path="entities/Line.ts" />
+/// <reference path="entities/Rectangle.ts" />
+/// <reference path="entities/Point.ts" />
+/// <reference path="entities/View.ts" />
 /// <reference path="input/Input.ts" />
-/// <reference path="entities/Entities.ts" />
 
 /* TODO
 - allow more sensible event handling (like if style can handle events itself)
@@ -92,8 +96,10 @@ var IH = new Input.InputHandler(scene);
 
 var rect1 = new Entities.Rectangle(new Entities.Point(50, 50), 50, 50);
 var rect2 = new Entities.Rectangle(new Entities.Point(150, 150), 50, 75);
-var line1 = new Entities.Line(new Entities.Point(50,90), new Entities.Point(300,100));
-var line2 = new Entities.Line(new Entities.Point(70,40), new Entities.Point(300,150));
+var line1 = new Entities.Line(new Entities.Point(50,90),
+			      new Entities.Point(300,100));
+var line2 = new Entities.Line(new Entities.Point(70,40),
+			      new Entities.Point(300,150));
 var line3 = new Entities.Line(rect1.pt, rect2.pt);
 
 var vr = new Entities.Rectangle(new Entities.Point(0, 0), 100, 100);
