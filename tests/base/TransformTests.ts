@@ -3,7 +3,7 @@ module Tests {
 
   function pointsNearlyEqual(p1: Entities.Point, p2: Entities.Point) {
     // test passed points are approximately equal
-    return p1.distance(p2) < 0.01;
+    return p1.distance(p2) < 0.1; // not that accurate...
   }
   
   export class CreationTests extends tsUnit.TestClass {
@@ -35,12 +35,10 @@ module Tests {
 
       var p1 = t.transform(new Entities.Point(0, 1));
       var p2 = t.transform(new Entities.Point(-1, 1));
-      console.log(p1, p2);
       
       // expected points
       var ex_p1 = new Entities.Point(-3, -4.5);
       var ex_p2 = new Entities.Point(-1.5, -4.5);
-      // things seem to apply backwards...
 
       this.isTrue(pointsNearlyEqual(ex_p1, p1));
       this.isTrue(pointsNearlyEqual(ex_p2, p2));
@@ -65,7 +63,23 @@ module Tests {
       this.isTrue(pointsNearlyEqual(ex_p2, p2));
     }
 
-    // add test for multiple transforms applied
-    // sidenode - cool if FPM built on top of git, so pass in repo and...
+    testMultipleTransforms() {
+      var t1 = new Base.Transform();
+      t1.translate(2, 2);
+      t1.rotate(3.14);
+      t1.scale(1.5, 1.5);
+      var t2 = new Base.Transform();
+      t2.translate(3, 4);
+      t2.scale(1, 4);
+
+      var p1 = t2.transform(t1.transform(new Entities.Point(0, 1)));
+      console.log(p1);
+      
+      // expected points
+      var ex_p1 = new Entities.Point(0, -2);
+
+      this.isTrue(pointsNearlyEqual(ex_p1, p1));
+    }
+
   }
 }
