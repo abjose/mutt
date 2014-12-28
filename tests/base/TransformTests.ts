@@ -3,7 +3,7 @@ module Tests {
 
   function pointsNearlyEqual(p1: Entities.Point, p2: Entities.Point) {
     // test passed points are approximately equal
-    return p1.distance(p2) < 0.001;
+    return p1.distance(p2) < 0.01;
   }
   
   export class CreationTests extends tsUnit.TestClass {
@@ -64,5 +64,8 @@ module Tests {
       this.isTrue(pointsNearlyEqual(ex_p1, p1));
       this.isTrue(pointsNearlyEqual(ex_p2, p2));
     }
+
+    // add test for multiple transforms applied
+    // sidenode - cool if FPM built on top of git, so pass in repo and...
   }
 }

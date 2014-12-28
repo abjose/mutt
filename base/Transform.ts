@@ -17,14 +17,22 @@ module Base {
       return T;
     }
 
+    // Rather than directly transforming T, transform the identity matrix
+    // and then set T = I*T, so that transforms happen in intuitive order.
     rotate(rad: number) {
-      mat2d.rotate(this.T, this.T, rad);
+      var I = mat2d.create();
+      mat2d.rotate(I, I, rad);
+      mat2d.mul(this.T, I, this.T);
     }
     scale(sx: number, sy: number) {
-      mat2d.scale(this.T, this.T, new Float32Array([sx, sy]));
+      var I = mat2d.create();
+      mat2d.scale(I, I, new Float32Array([sx, sy]));
+      mat2d.mul(this.T, I, this.T);
     }
     translate(tx: number, ty: number) {
-      mat2d.translate(this.T, this.T, new Float32Array([tx, ty]));
+      var I = mat2d.create();
+      mat2d.translate(I, I, new Float32Array([tx, ty]));
+      mat2d.mul(this.T, I, this.T);
     }
 
     invert() {
