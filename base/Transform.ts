@@ -3,6 +3,17 @@ module Base {
   /* TODO
      - add 'origin'? And do translations before/after other things.
      - maybe nice to have both a set_pos(...) and move(...) fns
+     - convert so that contain the actual values for rotation, translation, etc.
+       and only generate actual transform when necessary (like could have
+       getter for .T or something?). This way can just look up individual
+       values where that's more important (like when need to make CSS transform)
+       But this won't quite work for combining transforms...
+       Unless expect sort of non-standard behavior from transforms - like
+       basically assume everything is additive...
+       Or, could just allow parameters to be accessed for directly constructing
+       CSS transforms.
+       Alternately could add something to look at the matrix and output
+       how much it would rotate, translate, etc.
   */
   
   export class Transform {
