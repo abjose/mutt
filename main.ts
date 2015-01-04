@@ -82,6 +82,10 @@
 - maybe add a 'base' module, in which Scene, User, Entity, Style, Transform, ...
   are?
 
+- maybe should have _some_ mixins? Like 'transformable' makes sense...
+  what else was there going to be?
+  And can just put relevant mixin classes in the same file as Entity...
+  Seems useful to have Transformable, Hierarchical, and CallBacked?
 */
 
 
