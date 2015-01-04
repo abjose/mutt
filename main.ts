@@ -91,22 +91,7 @@
   their own objects
   but what advantage would this have over directly calling draw of target
   object (after looking up in id->obj mapping in scene?)
-
-- maybe should have _some_ mixins? Like 'transformable' makes sense...
-  what else was there going to be?
-  And can just put relevant mixin classes in the same file as Entity...
-  Seems useful to have Transformable, Hierarchical, and CallBacked?
 */
-
-
-// class CallBacked {
-//   callbacks; // maps names to list of functions
-//   add_callback(name, fn); // add to callbacks
-//   // could also verify callback is allowed?
-//   // i.e. should init callbacks with possible callback names, can't add
-//   // new ones externally...
-//   execute_callbacks(name, params); // execute all associated callbacks...
-// }
 
 var user = new Base.User();
 var scene = new Base.Scene(500, 500);
