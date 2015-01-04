@@ -3,9 +3,8 @@ module Base {
   // figure out how to put these in-line
   //interface StyleMap { [name: string]: Style; }
   interface StyleMap { [name: string]: any; }
-  interface EntityMap { [name: string]: Entity; }
-  interface EntityID { string; }
-  interface ChildrenMap { [string]: EntityID; }
+  export interface EntityMap { [name: string]: Entity; }
+  export interface ChildrenMap { [name: string]: string; }
 
   // sure this shouldn't be an interface?
   export class Entity {
@@ -21,7 +20,7 @@ module Base {
     //components: EntityMap;
     private T: Transform; // misleadingly named...
 
-    children: ChildrenMap;
+    //children: ChildrenMap;
 
     // consider adding ...contains(pt), inside(rect)
     // move(x, y) or something (and also getters...or change that)
