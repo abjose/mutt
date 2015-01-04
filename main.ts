@@ -48,8 +48,6 @@
   have some idea of 'view stack' or something
   or add some way of addressing Scenes or something (so can be like 'this user
   is looking at this view, which is at this point in hierarchy...)
-- add InputHandler
-- add Scene (Layer?)
 - get input to work through views??
   (just implement some kind of view-to-global point translation - could also 
   use this for rendering? write view-to-global and global-to-view)
@@ -71,16 +69,28 @@
 - add more scene stuff... (for handling IDs, etc.)
 - add more user stuff
 - add hierarchicalness
-- add transforms
 - add callbacks (as mixin?)
 - make input handling less dumb
 
-- Sure this will be well-suited to working with sockets / server-side stuff?
-  How to make robust to user screwing with things too much?
-  Honestly doesn't matter if screwing with things...as long as can't screw
-  with other people's things when they shouldn't be able to.
-- maybe add a 'base' module, in which Scene, User, Entity, Style, Transform, ...
-  are?
+- Sure this will be well-suited to working with sockets / server-side
+  stuff?  How to make robust to user screwing with things too much?
+  Honestly doesn't matter if screwing with things...as long as can't
+  screw with other people's things when they shouldn't be able to.
+
+- Worth reconsidering inheritance hierarchy? Maybe nice if shapes
+  were completely separate from rendering, like they don't even have
+  draw functions? Then scene deals with looking up how to draw them,
+  and passing the shape to the proper Style.
+
+- possibilities for changing scene:
+  scene has draw(view_id) fn and keeps track of id->obj mapping
+  scene just calls draw(identity, this) on passed view (from user)
+  wait, then why not have Scene take caring of telling every entity to draw
+  itself? Like if scene has draw(id, transform) thing than can 
+  have views or whatever just call scene.draw(id, transform) on all
+  their own objects
+  but what advantage would this have over directly calling draw of target
+  object (after looking up in id->obj mapping in scene?)
 
 - maybe should have _some_ mixins? Like 'transformable' makes sense...
   what else was there going to be?

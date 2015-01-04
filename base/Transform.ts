@@ -3,6 +3,17 @@ module Base {
   /* TODO
      - add 'origin'? And do translations before/after other things.
      - maybe nice to have both a set_pos(...) and move(...) fns
+     - convert so that contain the actual values for rotation, translation, etc.
+       and only generate actual transform when necessary (like could have
+       getter for .T or something?). This way can just look up individual
+       values where that's more important (like when need to make CSS transform)
+       But this won't quite work for combining transforms...
+       Unless expect sort of non-standard behavior from transforms - like
+       basically assume everything is additive...
+       Or, could just allow parameters to be accessed for directly constructing
+       CSS transforms.
+       Alternately could add something to look at the matrix and output
+       how much it would rotate, translate, etc.
   */
   
   export class Transform {
@@ -17,14 +28,22 @@ module Base {
       return T;
     }
 
+    // Rather than directly transforming T, transform the identity matrix
+    // and then set T = I*T, so that transforms happen in intuitive order.
     rotate(rad: number) {
-      mat2d.rotate(this.T, this.T, rad);
+      var I = mat2d.create();
+      mat2d.rotate(I, I, rad);
+      mat2d.mul(this.T, I, this.T);
     }
     scale(sx: number, sy: number) {
-      mat2d.scale(this.T, this.T, new Float32Array([sx, sy]));
+      var I = mat2d.create();
+      mat2d.scale(I, I, new Float32Array([sx, sy]));
+      mat2d.mul(this.T, I, this.T);
     }
     translate(tx: number, ty: number) {
-      mat2d.translate(this.T, this.T, new Float32Array([tx, ty]));
+      var I = mat2d.create();
+      mat2d.translate(I, I, new Float32Array([tx, ty]));
+      mat2d.mul(this.T, I, this.T);
     }
 
     invert() {

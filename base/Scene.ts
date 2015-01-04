@@ -6,7 +6,9 @@ module Base {
     // rendering things) 
     // in which case only need to pass entity and scene to a style to render
 
+    // TODO: remove 'entities' (replace with entity_map)
     entities: Entity[];
+    entity_map: EntityMap;
     dragged;
     ctx;
     //key;
@@ -29,6 +31,21 @@ module Base {
       this.entities.push(entity);
     }
 
+    draw_entity(entity_id: string, transform: Transform) {
+      // need to do anything aside from look up the entity and tell it to
+      // draw itself?
+      // TODO: perhaps ultimately want to put things into a drawing queue
+      // and draw everything at once, so can maybe do layering and other stuff
+      // more intelligently.
+      transform = transform || new Transform();
+      entity_map[entity_id].draw(this, transform);
+    }
+
+
+    // maybe have already thought about this, but why not have the transform
+    // just
+    // and just be able to generate proper transform when necessary?
+    
     // SHOULD GET RID OF RENDER AND CLEAR?!
     // don't think of this as an "active" thing that can be rendered,
     // but mostly for storage/administration
@@ -83,5 +100,20 @@ module Base {
 	this.render();
       }
     } 
-  }
+  }  
+}
+
+
+// TODO: move elsewhere?
+// generate a random 'guid'
+// stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+UUID() {
+  var d = performance.now();
+  // var uuid = 
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c) {
+    var r = (d + Math.random()*16)%16 | 0;
+    d = Math.floor(d/16);
+    return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+  });
+  // return uuid;
 }
