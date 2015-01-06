@@ -11,7 +11,6 @@
 /// <reference path="entities/View.ts" />
 
 /* TODO
-- allow more sensible event handling (like if style can handle events itself)
 - add lines, then add a rect made out of lines
 - make little divs that can be dragged to resize
   and little lines around border for changing dims
@@ -24,13 +23,6 @@
   or easy if edges are built on corners, and know how dragging edges
   should translate corners and vice-versa...
 - make an example XML 'document'
-- have a special context object that you can pass a type and layer to and
-  it will return the proper context (or whatever, css setting, etc.) to use
-  for rendering
-- Entity should be a class handling transforms, etc.
-  Then specific instances (Rectangle, etc.) will be like 'constraints' to 
-  make sure styles render properly
-- figure out how to automate TS workflow - including compilation, testing
 - Entities "what's needed to describe this object, nothing else"
   Styles   "what's needed to actually render in this style, given entity"
 - give entities ability to deal with input stuff
