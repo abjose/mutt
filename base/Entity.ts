@@ -71,15 +71,17 @@ module Base {
   
   interface AbstractEntity {
     // Represent entities abstractly.
+    id: string;
     render_style: string;
     transform: Transform;
+    z_index: number; // put this in transform???
     relation: GeometricRelations;
     messenger: Messenger;
   }
 
   interface GeometricRelations {
-    contains(pt: Point): boolean;
-    intersects(rect: Rectangle): boolean;
+    contains_pt(pt: Point): boolean;
+    intersects_rect(rect: Rectangle): boolean; // add AABB class?
     distance(pt: Point): number;
   }
 
@@ -105,21 +107,59 @@ module Base {
 
   interface Scene {
     context_manager: ContextManager;
-    user: User;
+    entities: MultiIndex;
+    render(view: View);
+  }
+
+  interface EntityIndex {
+    // should have some kind of cache?
+    add(entity_id);
+    remove(entity_id);
+    find(...);
+  }
+
+  interface MultiIndex extends EntityIndex {
+    cache: Cache;
+    indexes: EntityIndex[]; // better to store map from type to index?
+    addIndex(index: EntityIndex);
+
     /*
-      Needs to...
-      - keep track of entities...
-      - just have a 'render' thing that clears everything (for now) and
-        redraws it all
-      - ??
+      Honestly feel like this should be the main caching thing...
+      And it could have its own index, checking for IDs 
+      Actually, that should probably be something else...like a cache...
+      OK SHOULD HAVE IDS I GUESS
+      or names...?
      */
   }
 
-  interface User {
-
+  interface Cache {
+    // should extend EntityIndex?
+    // for now, basically don't do anything...
+    // will be used for fetching an entity if necessary
+    // and deleting LRU entities if necessary
+    // also need to deal with the server overwriting the cache...
+    // I guess can just be like
+    // Scene.entities.cache.invalidate(entity_id);
+    // and so will refetch...or could pass along actual JSON too...
+    // have UUID code in here I guess.
   }
 
   interface ContextManager {
+    // assume get everything to render all at once?
+    // Then naive approach is basically to:
+    // - sort by z-index
+    // - ignore things that are too small?
+    // - somehow find what kind of thing the entity needs to render on
+    // - look at front of 'context list' or whatever
+    // -- if right type of context, render on to it
+    // -- otherwise, append new context and render
+    // what about for divs and such, where they need to be above an
+    // html element like a canvas? Just get canvas' z-index I guess?
 
+    // Alternately, equally effective to just 'stream' entities as they come?
+    // Would have to keep track of what contexts had what z-indices in them...
+    // and then might have to split or re-render parts of context list
+    // so ideally would have some way to hash in to based on z-index
+    // and would just give you the top if highest...
   }
 }
