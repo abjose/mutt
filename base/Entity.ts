@@ -109,28 +109,34 @@ module Base {
          redraws it all
     */
     context_manager: ContextManager;
-    user: User;
-    index: MultiIndex;  // for now will probably just have spatial index
-
-    render(); // ask user for view and render it
+    multi_index: MultiIndex;  // for now will probably just have spatial index
+    render_view(view: Entity); // not id?
   }
 
-  interface MultiIndex {
-    // Allow generic interface to various indexes...
-    // Given future usage of some kind of database, is MultiIndex best approach?
-    indices: EntityIndex[];
-    add(k, v);
-    update(k, v); // ??
-    remove(k);
-    find(k); // ??
-    query(k)
+  interface EntityIndex {
+    constructor(entities: Entity[]); // ?
+    can_handle_key(key): boolean;
+    add_entity(k, v);
+    update_entity(k, v); // ??
+    remove_entity(k);
+    find_entity(k); // ??
+    query_entities(k)
   }
   
-  interface EntityIndex {
-    can_handle_key(key): boolean;
+  interface MultiIndex extends EntityIndex {
+    // Allow generic interface to various indexes...
+    // Given future usage of some kind of database, is MultiIndex best approach?
+    // Perhaps better to have some idea of a cache that handles fetching from a database,
+    // use the cache to build indexes?
+    // OR, honestly, considering you'll probably only do spatial and tag-based queries,
+    // just stick with that?
+    // Flexibility is always nice... 
+    indices: EntityIndex[];  // Make more sense to map from type to index?
+    add_index(index: EntityIndex);
   }
   
   interface User {
+    // TODO: think it's more appropriate to push concept of User onto user.
     // Is user a special view? I.e. should create a new view inside view
     // the user is technically inside of to represent user? Otherwise how to
     // have multiple users in the same view...
