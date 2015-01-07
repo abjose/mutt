@@ -102,24 +102,45 @@ module Base {
     relation?: GeometricRelations;
     messenger?: Messenger;
   }
-
+  
   interface Scene {
+    /* TODO:
+       - just have a 'render' thing that clears everything (for now) and
+         redraws it all
+    */
     context_manager: ContextManager;
     user: User;
-    /*
-      Needs to...
-      - keep track of entities...
-      - just have a 'render' thing that clears everything (for now) and
-        redraws it all
-      - ??
-     */
+    index: MultiIndex;  // for now will probably just have spatial index
+
+    render(); // ask user for view and render it
   }
 
+  interface MultiIndex {
+    // Allow generic interface to various indexes...
+    // Given future usage of some kind of database, is MultiIndex best approach?
+    indices: EntityIndex[];
+    add(k, v);
+    update(k, v); // ??
+    remove(k);
+    find(k); // ??
+    query(k)
+  }
+  
+  interface EntityIndex {
+    can_handle_key(key): boolean;
+  }
+  
   interface User {
-
+    // Is user a special view? I.e. should create a new view inside view
+    // the user is technically inside of to represent user? Otherwise how to
+    // have multiple users in the same view...
+    // But then how to update views?
+    view_stack;
+    get_current_view();
   }
 
   interface ContextManager {
-
+    // Easier if this gets passed the entire set of things to
+    // render all at once?
   }
 }
