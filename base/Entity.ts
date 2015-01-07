@@ -71,15 +71,17 @@ module Base {
   
   interface AbstractEntity {
     // Represent entities abstractly.
+    id: string;
     render_style: string;
     transform: Transform;
+    z_index: number; // put this in transform???
     relation: GeometricRelations;
     messenger: Messenger;
   }
 
   interface GeometricRelations {
-    contains(pt: Point): boolean;
-    intersects(rect: Rectangle): boolean;
+    contains_pt(pt: Point): boolean;
+    intersects_rect(rect: Rectangle): boolean; // add AABB class?
     distance(pt: Point): number;
   }
 
@@ -109,44 +111,56 @@ module Base {
          redraws it all
     */
     context_manager: ContextManager;
-    multi_index: MultiIndex;  // for now will probably just have spatial index
-    render_view(view: Entity); // not id?
+    entities: MultiIndex;
+    render(view: View); // not id?
   }
 
   interface EntityIndex {
-    constructor(entities: Entity[]); // ?
-    can_handle_key(key): boolean;
-    add_entity(k, v);
-    update_entity(k, v); // ??
-    remove_entity(k);
-    find_entity(k); // ??
-    query_entities(k)
+    add(entity_id: string);
+    update(entity_id: string);
+    remove(entity_id);
+    query(...);  // should template based on this?
   }
-  
+
   interface MultiIndex extends EntityIndex {
-    // Allow generic interface to various indexes...
-    // Given future usage of some kind of database, is MultiIndex best approach?
-    // Perhaps better to have some idea of a cache that handles fetching from a database,
-    // use the cache to build indexes?
-    // OR, honestly, considering you'll probably only do spatial and tag-based queries,
-    // just stick with that?
-    // Flexibility is always nice... 
-    indices: EntityIndex[];  // Make more sense to map from type to index?
+    // Allow generic interface to various indexes
+    cache: Cache;
+    indexes: EntityIndex[]; // better to store map from type to index?
+    // Can always have many-to-one mapping if index can
+    // handle multiple types of queries...
     add_index(index: EntityIndex);
   }
-  
-  interface User {
-    // TODO: think it's more appropriate to push concept of User onto user.
-    // Is user a special view? I.e. should create a new view inside view
-    // the user is technically inside of to represent user? Otherwise how to
-    // have multiple users in the same view...
-    // But then how to update views?
-    view_stack;
-    get_current_view();
+
+  interface Cache {
+    // should extend EntityIndex?
+    // for now, basically don't do anything...
+    // will be used for fetching an entity if necessary
+    // and deleting LRU entities if necessary
+    // also need to deal with the server overwriting the cache...
+    // I guess can just be like
+    // Scene.entities.cache.invalidate(entity_id);
+    // and so will refetch...or could pass along actual JSON too...
+    // have UUID code in here I guess.
+
+    // is the cache what you can use to associate entity_ids to entities?
   }
 
   interface ContextManager {
-    // Easier if this gets passed the entire set of things to
-    // render all at once?
+    // assume get everything to render all at once?
+    // Then naive approach is basically to:
+    // - sort by z-index
+    // - ignore things that are too small?
+    // - somehow find what kind of thing the entity needs to render on
+    // - look at front of 'context list' or whatever
+    // -- if right type of context, render on to it
+    // -- otherwise, append new context and render
+    // what about for divs and such, where they need to be above an
+    // html element like a canvas? Just get canvas' z-index I guess?
+
+    // Alternately, equally effective to just 'stream' entities as they come?
+    // Would have to keep track of what contexts had what z-indices in them...
+    // and then might have to split or re-render parts of context list
+    // so ideally would have some way to hash in to based on z-index
+    // and would just give you the top if highest...
   }
 }
