@@ -59,6 +59,10 @@ module Base {
     }
   }
 
+
+  /* new design */
+  
+  
   interface Transform2D {
     // OK, maybe change transform so can't 'chain internally' - like can
     // keep track of translation, scale, rotation internally, but
@@ -74,7 +78,7 @@ module Base {
     id: string;
     render_style: string;
     transform: Transform;
-    z_index: number; // put this in transform???
+    z_index: number; // put this in transform?
     relation: GeometricRelations;
     messenger: Messenger;
   }
@@ -161,6 +165,20 @@ module Base {
     // Would have to keep track of what contexts had what z-indices in them...
     // and then might have to split or re-render parts of context list
     // so ideally would have some way to hash in to based on z-index
-    // and would just give you the top if highest...
+    // and would just give you the top if highest, and deal with splitting and
+    // merging automatically...
   }
 }
+
+/* Simple way of preventing users from getting data they shouldn't
+have - cache requests stuff from server, and sends over an ID
+including something only the 'real' user would know. Then server
+compares that to locally stored thing...  Wait, maybe it doesn't make
+sense for the cache to do the requesting - should have a 'fetcher' or
+something that makes use of the cache.  Also to make IDs more unique,
+could add username and/or time of creation Maybe should have
+Communication class that deals with sockets and stuff, cache can use
+that (or any entity that needs to modify itself...wait shouldn't all
+changes go to server?). Should still have cache if also have comm
+class?
+*/
