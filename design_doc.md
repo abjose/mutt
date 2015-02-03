@@ -1,47 +1,45 @@
 MUTT DESIGN DOC
 ===============
 
-Responsibilities:
-- keep track of entities
-- facilitate queries over entities?
+Can make IDs more unique by prepending date or username or whatever...
 
-Scene should have ContextManager, SceneGraph
-WAIT BUT if SceneGraph is defined externally to Entity, then
-won't it be difficult to specify hierarchical Entities?
-Scene should have render(view_id) and render_group([ids])
-render(view_id) will figure out what to draw and call render_group(...)
+Sure you want to think of everything existing in the same
+space? Kinda seems intuitive to have different view look at different
+documents (or at least things that could be treated as independent
+documents). And this might be better suited to databases...
 
-Maybe should go back to thinking about just how to draw a scene
-described by a JSON file (and redraw it every time).  You'd have
-Entities with no specific hierarchy specified, just some of them would
-have other Entities (or lists, objects, etc. of entities) as
-members...and presumably those entities could have "draw" called on
-them too, and the parent entity would make sure to do that when it was
-being drawn (or cleared). So scene graph is implicit.  
-Probably not actually JSON:
-ToolBox:
- - constructor: this.listen(button1, 'click', function() {..change color..};)
- - id?
- - draw: function...
- - clear: function...
- - buttons: [
-     Button:
-       - id?
-       - color
-       - draw: ...
-       - clear: ...
-       - onClick: ...
-     Button: 
-     Button:
-     Button:
- ]
+Don't have to have live updating, maybe even better if don't. Could
+just persist to server when user saves an entity. Then if two users
+both edit same entity, could try to resolve, lock, or insert both
+versions in their own space to be resolved manually?
 
-And could have like GenericToolBox([buttons]), or RightClickToolBox(), ...
-Does not having things be ID based pose any problem? Like if actually have
-Entities as members, can get circular references...
+Ideally can track dirty areas and only redraw those, but don't for
+now. Should also probably have a remove function...and add should
+take an entity with id? Or just entity?  Just id?  Also entities
+should be able to call update on scene when they're updated through
+events... 
 
-Could set up erasure callbacks rather than having to store prev_style...
+How to ignore multiple repeated calls to update? Guess will have to
+wait until have some kind of 'dirty' functionality.  Could keep
+track of what's dirty with just a list of ids. So entities wouldn't
+have to update the scene themselves, just mark themselves as
+dirty. And then on redraw get 'dirty list' by looking up everything
+touched by dirty entities and redrawing.  
 
-Consider having both Entity and Drawer(?) be abstract...
-Sending events from drawn object to seems Entity awkward...
+What if used objects to instantiate Messengers? Like didn't subclass
+messengers but sent objects denoting edges, functions to call, ...
+Cool because could make new messengers easily, but not super
+nice. Could just make a subclass that allows this, but don't force
+everything to do it. Could even automatically init somehow, based on
+stuff in EventManager.
+Ehh, still not sure Messengers should be sub-classed. Seems convenient
+to just construct them in Entity constructor...
 
+Cool if can animate view in mutt, could basically make presentations...
+What exactly would animation require? Like the idea still of having
+"abstract" animations operating through the entity, but also allowing
+control to be yielded to the Renderer...
+
+
+
+Make new object, ViewPort (extends View?) that keeps track of screen stuff?

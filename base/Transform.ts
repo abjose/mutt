@@ -27,6 +27,12 @@ module Base {
       mat2d.copy(T.T, this.T);
       return T;
     }
+    matrixString() {
+      // maybe just loop
+      return String(this.T[0]) + ','+String(this.T[1])
+	+ ','+String(this.T[2]) + ','+String(this.T[3])
+	+ ','+String(this.T[4]) + ','+String(this.T[5]);
+    }
 
     // Rather than directly transforming T, transform the identity matrix
     // and then set T = I*T, so that transforms happen in intuitive order.
@@ -60,11 +66,13 @@ module Base {
     mul(other: Transform) {
       return this.multiply(other);
     }
-    transform(pt: Entities.Point) {
+    //transform(pt: Entities.Point) {
+    transform(pt) { // change these back...
       // return transformed copy of pt
       var temp_pt = vec2.fromValues(pt.x, pt.y);
       vec2.transformMat2d(temp_pt, temp_pt, this.T);
-      return new Entities.Point(temp_pt[0], temp_pt[1]);
+      //return new Entities.Point(temp_pt[0], temp_pt[1]);
+      return {x: temp_pt[0], y: temp_pt[1]};
     }
   }
 }
