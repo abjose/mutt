@@ -1,4 +1,4 @@
-/// <reference ppath="libs/gl-matrix.d.ts" />
+/// <reference path="libs/gl-matrix.d.ts" />
 /// <reference path="base/Transform.ts" />
 
 // caution!! changed Transform to not use Points!!!
@@ -17,7 +17,7 @@ class TransformStack {
   }
   popState() {
     if (this.push_index != undefined) {
-      this.transforms.slice(0, this.push_index);
+      this.transforms = this.transforms.slice(0, this.push_index);
     }
   }
 
@@ -114,10 +114,15 @@ paw.styles.add_style(new DivRect());
 
 var rect = {x: 10, y: 10, width: 50, height: 50,
 	    style: 'div', type: 'rect'};
+var rect2 = {x: 150, y: 150, width: 80, height: 50,
+	     style: 'div', type: 'rect'};
 // could also check to see if there was a 'transform' property on the entity?
 var test_trans = new Base.Transform();
 test_trans.translate(100, -10);
 test_trans.rotate(3.141 * 0.25);
+paw.transform.pushState();
 paw.transform.add(test_trans);
 paw.draw(rect);
-// consider adding transform onto TransformStack, just push/pop that one
+//paw.transform.popState();
+//paw.transform.add(test_trans.copy());
+paw.draw(rect2);
