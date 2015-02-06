@@ -1,3 +1,5 @@
+/// <reference path="libs/gl-matrix.d.ts" />
+/// <reference path="base/Transform.ts" />
 /// <reference path="paw.ts" />
 
 /*
@@ -18,6 +20,9 @@ Minimal steps to prototype bootstrapping interface-creator:
 - need to have some way of replicating structure of entities made in-mutt
 
 
+
+Don't worry about bootstrapping for now Get demo working - something
+like a graph where you can select the style if each edge/node
 */
 
 
@@ -27,17 +32,19 @@ class MultiIndex {
   // TODO: add more indices (particularly for assisting view)
   // TODO: switch query to taking a query object like before
 
+  index: any;
+  
   constructor() {
     this.index = {};
   }
   
   put(entity) {
-    v['id'] = Math.random();
-    this.index[v.id] = v; // lol
+    entity['id'] = Math.random();
+    this.index[entity.id] = entity; // lol
   }
   
   get(id) {
-    return this.index[k];
+    return this.index[id];
   }
   
   remove(entity) {
@@ -45,26 +52,28 @@ class MultiIndex {
   }
 
   query() {
-    return this.entities.index; // TODO: lol
+    return this.index; // TODO: lol
   }
 }
 
-var mutt {
-  entities: new MultiIndex();
+var mutt = {
+  entities: new MultiIndex(),
 
-  update() {
+  update: function() {
     var entities_to_draw = this.entities.query();
     for (var id in entities_to_draw) {
       if (entities_to_draw.hasOwnProperty(id)) {
-	this.draw(entity);
+	this.draw(entities_to_draw[id]);
       }
     }
-  }
+  },
   
-  draw(entity) {
+  draw: function(entity) {
     // sure you want this? Could just force all entities to define 'draw'
     var is_transformed = entity.transform != undefined;
+    console.log(is_transformed);
     var has_draw = entity.draw != undefined;
+    console.log(has_draw);
     if (is_transformed) {
       paw.transform.pushState();
       paw.transform.add(entity.transform);
@@ -77,23 +86,42 @@ var mutt {
     if (is_transformed) {
       paw.transform.popState();
     }
-  }
+  },
 
-  add(entity) {
-    this.entities.add(entity);
-  }
+  add: function(entity) {
+    this.entities.put(entity);
+  },
 
-  remove() {
+  remove: function(entity) {
     this.entities.remove(entity);
-  }
+  },
 }
 
 
+class Rectangle {
+  // make constructor take an object?
+  type: string;
+  style: string;
+  transform: Base.Transform;
+  
+  constructor(public x, public y, public width, public height, transform?) {
+    this.type = 'rect';
+    this.style = 'div';
+    this.transform = transform;
+  }
+}
+
 // something like
-var r1 = new Rectangle({blah});
-var r2 = new Rectangle({blah});
+paw.styles.add_style(new DivRect());
+var r1 = new Rectangle(0, 0, 50, 50, new Base.Transform());
+r1.transform.scale(3, 0.5);
+r1.transform.rotate(3.141 * 0.25);
+r1.transform.translate(250, 250);
+// waaaaait, was it not applying because you were modifying the transform
+// separately from the one inside the entity?
+var r2 = new Rectangle(70, 70, 25, 25);
 mutt.add(r1);
 mutt.add(r2);
 mutt.update();
-mutt.remove(r2);
-mutt.update();
+//mutt.remove(r2);
+//mutt.update();

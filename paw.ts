@@ -110,6 +110,7 @@ var paw = {
   },
 };
 
+/*
 paw.styles.add_style(new DivRect());
 
 var rect = {x: 10, y: 10, width: 50, height: 50,
@@ -126,3 +127,4 @@ paw.draw(rect);
 //paw.transform.popState();
 //paw.transform.add(test_trans.copy());
 paw.draw(rect2);
+*/
