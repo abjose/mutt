@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!--<canvas id="myCanvas" width="500" height="500"></canvas>-->
+  <!--<div id="myDiv">blah</div>-->
+</body>
+<script type="text/javascript"
+	src="libs/gl-matrix/src/gl-matrix/common.js"></script>
+<script type="text/javascript"
+	src="libs/gl-matrix/src/gl-matrix/vec2.js"></script>
+<script type="text/javascript"
+	src="libs/gl-matrix/src/gl-matrix/mat2d.js"></script>
+<script type="text/javascript" src="paw.js"></script>
+<script>
+  paw.styles.add_style(new DivRect());
+  var rect = {x: 10, y: 10, width: 50, height: 50,
+              style: 'div', type: 'rect'};
+  var rect2 = {x: 180, y: 10, width: 80, height: 50,
+               style: 'div', type: 'rect'};
+  var line1 = {start: {x: 70, y: 35},
+	       end: {x: 170, y: 35},
+	       style: 'canvas', type: 'line'}
+  // could also check to see if there was a 'transform' property on the entity?
+  var test_trans = new Base.Transform();
+
+// THINK THESE TRANSFORMS ARE WRONG!!
+// like, don't want to rotate in place, right? Want to define a while new
+// area... so maybe divs are transforming wrong, not line!
+// wait maybe these are ok...
+// because not translating, _would_ expect to rotate in place...
+
+// after you think it's right try drawing two shapes in the same 'space'
+// like have rectangle and line both drawn as expected...
+// actually lol I think that was wrong
+
+  test_trans.translate(150, 20);
+  test_trans.scale(0.5, 1);
+  test_trans.rotate(3.141 * 0.25);
+  paw.transform.pushState();
+  paw.transform.add(test_trans);
+  
+  paw.draw(line1);
+  paw.draw(rect);
+
+  //paw.transform.popState();
+  //paw.transform.add(test_trans.copy());
+  paw.draw(rect2);
+</script>
+</html>

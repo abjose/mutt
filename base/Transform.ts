@@ -17,7 +17,8 @@ module Base {
   */
   
   export class Transform {
-    protected T: Float32Array;
+    //protected T: Float32Array;
+    T: Float32Array;
     
     constructor() {
       this.T = mat2d.create();

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!--<canvas id="myCanvas" width="500" height="500"></canvas>-->
+  <!--<div id="myDiv">blah</div>-->
+</body>
+<script type="text/javascript"
+	src="libs/gl-matrix/src/gl-matrix/common.js"></script>
+<script type="text/javascript"
+	src="libs/gl-matrix/src/gl-matrix/vec2.js"></script>
+<script type="text/javascript"
+	src="libs/gl-matrix/src/gl-matrix/mat2d.js"></script>
+<script type="text/javascript" src="paw.js"></script>
+<script type="text/javascript" src="mutt.js"></script>
+<script>
+  // something like
+  paw.styles.add_style(new DivRect());
+  var r1 = new Rectangle(0, 0, 50, 50, new Base.Transform());
+  r1.transform.scale(3, 0.5);
+  r1.transform.rotate(3.141 * 0.25);
+  r1.transform.translate(250, 250);
+  // waaaaait, was it not applying because you were modifying the transform
+  // separately from the one inside the entity?
+  var r2 = new Rectangle(70, 70, 25, 25);
+  mutt.add(r1);
+  mutt.add(r2);
+  mutt.update();
+  //mutt.remove(r2);
+  //mutt.update();
+</script>
+</html>
