@@ -15,20 +15,20 @@
 	src="libs/gl-matrix/src/gl-matrix/mat2d.js"></script>
 <script type="text/javascript" src="paw.js"></script>
 <script>
-  var rect1 = new Rectangle({x: 10, y: 10,
-			     width: 50, height: 50,
-			     style: 'div'});
-  var rect2 = new Rectangle({x: 180, y: 10,
-			     width: 80, height: 50,
-			     style: 'div'});
-  var line1 = new Line({start: new Point(70, 35),
-			end: new Point(170, 35),
-			style: 'canvas'});
+  var rect1 = new Entity.Rectangle({x: 10, y: 10,
+				    width: 50, height: 50,
+				    style: 'div'});
+  var rect2 = new Entity.Rectangle({x: 180, y: 10,
+				    width: 80, height: 50,
+				    style: 'div'});
+  var line1 = new Entity.Line({start: new Entity.Point(70, 35),
+			       end: new Entity.Point(170, 35),
+			       style: 'canvas'});
 
   var test_trans = new Base.Transform();
   test_trans.translate(150, 20);
   test_trans.scale(0.5, 1);
-  test_trans.rotate(3.141 * 0.25);
+  test_trans.rotate(3.141 * 0.1);
   paw.transform.pushState();
   paw.transform.add(test_trans);
   

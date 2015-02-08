@@ -1,9 +1,9 @@
 
 module Base {
-
-  export interface Style {
-    name: string;
-    render(entity: Entity, scene: Scene): void;
-    clear(entity: Entity, scene: Scene): void;
+  export interface Style<EntityType> {
+    style: string;
+    entity: string; // change these names...
+    draw(entity: EntityType, transform: Base.Transform);
+    // consider adding relations and stuff
   }
 }
