@@ -1,6 +1,17 @@
 /// <reference path="libs/gl-matrix.d.ts" />
 /// <reference path="base/Transform.ts" />
 /// <reference path="paw.ts" />
+/// <reference path="base/Entity.ts" />
+/// <reference path="base/MultiIndex.ts" />
+/// <reference path="base/Style.ts" />
+/// <reference path="base/StyleManager.ts" />
+/// <reference path="base/Transform.ts" />
+/// <reference path="base/TransformStack.ts" />
+/// <reference path="entities/Line.ts" />
+/// <reference path="entities/Point.ts" />
+/// <reference path="entities/Rectangle.ts" />
+/// <reference path="styles/Rectangle/DivRect.ts" />
+/// <reference path="styles/Line/CanvasLine.ts" />
 
 /*
 TODO:
@@ -19,45 +30,20 @@ Minimal steps to prototype bootstrapping interface-creator:
   and later these can be modified through mutt itself
 - need to have some way of replicating structure of entities made in-mutt
 
-
-
 Don't worry about bootstrapping for now Get demo working - something
 like a graph where you can select the style if each edge/node
+
+mutt 2du:
+- move shit to separate files
+- add spatial relation stuff to Rect and Line?
+- add simple spatial query to MultiIndex
+- add clipping
+- make view
+- think about messenger stuff
 */
 
-
-class MultiIndex {
-  // very simple for now
-  // TODO: improve IDs
-  // TODO: add more indices (particularly for assisting view)
-  // TODO: switch query to taking a query object like before
-
-  index: any;
-  
-  constructor() {
-    this.index = {};
-  }
-  
-  put(entity) {
-    entity['id'] = Math.random();
-    this.index[entity.id] = entity; // lol
-  }
-  
-  get(id) {
-    return this.index[id];
-  }
-  
-  remove(entity) {
-    delete this.index[entity.id];
-  }
-
-  query() {
-    return this.index; // TODO: lol
-  }
-}
-
 var mutt = {
-  entities: new MultiIndex(),
+  entities: new Base.MultiIndex(),
 
   update: function() {
     var entities_to_draw = this.entities.query();
@@ -71,9 +57,7 @@ var mutt = {
   draw: function(entity) {
     // sure you want this? Could just force all entities to define 'draw'
     var is_transformed = entity.transform != undefined;
-    console.log(is_transformed);
     var has_draw = entity.draw != undefined;
-    console.log(has_draw);
     if (is_transformed) {
       paw.transform.pushState();
       paw.transform.add(entity.transform);
@@ -96,32 +80,3 @@ var mutt = {
     this.entities.remove(entity);
   },
 }
-
-
-class Rectangle {
-  // make constructor take an object?
-  type: string;
-  style: string;
-  transform: Base.Transform;
-  
-  constructor(public x, public y, public width, public height, transform?) {
-    this.type = 'rect';
-    this.style = 'div';
-    this.transform = transform;
-  }
-}
-
-// something like
-paw.styles.add_style(new DivRect());
-var r1 = new Rectangle(0, 0, 50, 50, new Base.Transform());
-r1.transform.scale(3, 0.5);
-r1.transform.rotate(3.141 * 0.25);
-r1.transform.translate(250, 250);
-// waaaaait, was it not applying because you were modifying the transform
-// separately from the one inside the entity?
-var r2 = new Rectangle(70, 70, 25, 25);
-mutt.add(r1);
-mutt.add(r2);
-mutt.update();
-//mutt.remove(r2);
-//mutt.update();

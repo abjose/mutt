@@ -17,14 +17,15 @@
 <script type="text/javascript" src="mutt.js"></script>
 <script>
   // something like
-  paw.styles.add_style(new DivRect());
-  var r1 = new Rectangle(0, 0, 50, 50, new Base.Transform());
+  //paw.styles.add_style(new Style.DivRect());
+  var r1 = new Entity.Rectangle({x: 0, y: 0, width: 50, height: 50,
+				 style: 'div',
+				 transform: new Base.Transform()});
   r1.transform.scale(3, 0.5);
   r1.transform.rotate(3.141 * 0.25);
   r1.transform.translate(250, 250);
-  // waaaaait, was it not applying because you were modifying the transform
-  // separately from the one inside the entity?
-  var r2 = new Rectangle(70, 70, 25, 25);
+  var r2 = new Entity.Rectangle({x: 70, y: 70, width: 25, height: 25,
+				 style: 'div'});
   mutt.add(r1);
   mutt.add(r2);
   mutt.update();
