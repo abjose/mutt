@@ -34,13 +34,60 @@ class TransformStack {
   }
 }
 
-interface Style {
+// be a class??
+interface Entity {
+  type: string;
+  style: string;
+
+  // could put style-extraction stuff if were class...
+}
+
+class Point implements Entity {
+  type: string;
+  style: string;
+  //x: number; y: number;
+  constructor(public x, public y) {
+    this.type = 'point';
+    //this.style = args.style;
+    this.style = '';
+  }
+}
+
+class Rectangle implements Entity {
+  type: string;
+  style: string;
+  x: number; y: number;
+  width: number; height: number;
+
+  constructor(args) {
+    this.x = args.x; this.y = args.y
+    this.width = args.width; this.height = args.height;
+    this.type = 'rect';
+    this.style = args.style;
+  }
+}
+
+class Line implements Entity {
+  type: string;
+  style: string;
+  start: Point;
+  end: Point;
+  
+  constructor(args) {
+    this.start = args.start;
+    this.end = args.end;
+    this.type = 'line';
+    this.style = args.style;
+  }
+}
+
+interface Style<EntityType> {
   style: string; entity: string; // change these names...
-  draw(entity, transform: Base.Transform);
+  draw(entity: EntityType, transform: Base.Transform);
   // consider adding relations and stuff
 }
   
-class DivRect implements Style {
+class DivRect implements Style<Rectangle> {
   style: string; entity: string;
   secret_place: string;
   
@@ -49,7 +96,7 @@ class DivRect implements Style {
     this.secret_place = 'STYLEDATA_' + this.style; // change this lol
   }
   
-  draw(rect, transform: Base.Transform) {
+  draw(rect: Rectangle, transform: Base.Transform) {
     if (rect[this.secret_place] == undefined) {
       // probably make this into a function, like 'get_data'...
       rect[this.secret_place] = {};
@@ -72,13 +119,13 @@ class DivRect implements Style {
       'translate('+rect.x+'px,'+rect.y+'px)';
   }
   
-  clear(rect, transform: Base.Transform) {
+  clear(rect: Rectangle, transform: Base.Transform) {
     if (rect[this.style] != undefined)
       rect[this.style].element.style.display = 'none';
   }
 }
 
-class CanvasLine implements Style {
+class CanvasLine implements Style<Line> {
   style: string; entity: string;
   secret_place: string;
   
@@ -87,7 +134,7 @@ class CanvasLine implements Style {
     this.secret_place = 'STYLEDATA_' + this.style; // change this lol
   }
   
-  draw(line, transform: Base.Transform) {
+  draw(line: Line, transform: Base.Transform) {
     if (line[this.secret_place] == undefined) {
       // probably make this into a function, like 'get_data'...
       line[this.secret_place] = {};
@@ -113,7 +160,7 @@ class CanvasLine implements Style {
   clear(line, transform: Base.Transform) {}  
 }
 
-interface TypeToStyle { [entity_type: string]: Style; }
+interface TypeToStyle { [entity_type: string]: Style<any>; }
 interface StyleCollection { [style_type: string]: TypeToStyle; }
 class StyleManager {
   styles: StyleCollection; // [style_type][entity_type] -> Style
@@ -130,7 +177,7 @@ class StyleManager {
     return this.styles[entity.style][entity.type];
   }
 
-  add_style(style: Style) {
+  add_style(style: Style<any>) {
     if (this.styles[style.style] == undefined) this.styles[style.style] = {};
     this.styles[style.style][style.entity] = style;
   }

@@ -15,13 +15,15 @@
 	src="libs/gl-matrix/src/gl-matrix/mat2d.js"></script>
 <script type="text/javascript" src="paw.js"></script>
 <script>
-  var rect = {x: 10, y: 10, width: 50, height: 50,
-              style: 'div', type: 'rect'};
-  var rect2 = {x: 180, y: 10, width: 80, height: 50,
-               style: 'div', type: 'rect'};
-  var line1 = {start: {x: 70, y: 35},
-	       end: {x: 170, y: 35},
-	       style: 'canvas', type: 'line'}
+  var rect1 = new Rectangle({x: 10, y: 10,
+			     width: 50, height: 50,
+			     style: 'div'});
+  var rect2 = new Rectangle({x: 180, y: 10,
+			     width: 80, height: 50,
+			     style: 'div'});
+  var line1 = new Line({start: new Point(70, 35),
+			end: new Point(170, 35),
+			style: 'canvas'});
 
   var test_trans = new Base.Transform();
   test_trans.translate(150, 20);
@@ -31,7 +33,7 @@
   paw.transform.add(test_trans);
   
   paw.draw(line1);
-  paw.draw(rect);
+  paw.draw(rect1);
 
   //paw.transform.popState();
   //paw.transform.add(test_trans.copy());
