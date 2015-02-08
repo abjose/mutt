@@ -54,28 +54,63 @@ class DivRect implements Style {
       // probably make this into a function, like 'get_data'...
       rect[this.secret_place] = {};
       rect[this.secret_place].element = document.createElement('div');
+      rect[this.secret_place].element.style.backgroundColor = 'black';
+      rect[this.secret_place].element.style.padding = 0;
+      rect[this.secret_place].element.style.position = 'absolute';
+      rect[this.secret_place].element.style.display = 'block';
       document.body.appendChild(rect[this.secret_place].element);
     }
     var ele = rect[this.secret_place].element;
-
-    ele.style.left = String(rect.x) + 'px';
-    ele.style.top  = String(rect.y) + 'px';
+    ele.style.left = '0px';
+    ele.style.top  = '0px';
     ele.style.width  = String(rect.width) + 'px';
     ele.style.height = String(rect.height) + 'px';
-    ele.style.backgroundColor = 'black';
-    ele.style.padding = 0;
-    ele.style.position = 'absolute';
-    //console.log(transform.matrixString());
-    // ughhhhhhh
-    ele.style.webkitTransform = 'matrix('+transform.matrixString()+')';
-    //ele.style.webkitTransform = 'rotate(40deg)';
-    ele.style.display = 'block';
+    ele.style.webkitTransformOrigin = 'top left';
+    // do some silly stuff because CSS transform is local to div...
+    ele.style.webkitTransform =
+      'matrix('+transform.matrixString()+') '+
+      'translate('+rect.x+'px,'+rect.y+'px)';
   }
   
   clear(rect, transform: Base.Transform) {
     if (rect[this.style] != undefined)
       rect[this.style].element.style.display = 'none';
   }
+}
+
+class CanvasLine implements Style {
+  style: string; entity: string;
+  secret_place: string;
+  
+  constructor() {
+    this.entity = 'line'; this.style = 'canvas';
+    this.secret_place = 'STYLEDATA_' + this.style; // change this lol
+  }
+  
+  draw(line, transform: Base.Transform) {
+    if (line[this.secret_place] == undefined) {
+      // probably make this into a function, like 'get_data'...
+      line[this.secret_place] = {};
+      line[this.secret_place].canvas = document.createElement('canvas');
+      line[this.secret_place].canvas.width = '1000';
+      line[this.secret_place].canvas.height = '1000';
+      document.body.appendChild(line[this.secret_place].canvas);
+    }
+    
+    var canvas = line[this.secret_place].canvas;
+    var ctx = canvas.getContext('2d');
+    ctx.save();
+    // make this suck less
+    ctx.transform(transform.T[0], transform.T[1], transform.T[2],
+                  transform.T[3], transform.T[4], transform.T[5]);
+    ctx.beginPath();
+    ctx.moveTo(line.start.x, line.end.y);
+    ctx.lineTo(line.end.x, line.end.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+  
+  clear(line, transform: Base.Transform) {}  
 }
 
 interface TypeToStyle { [entity_type: string]: Style; }
@@ -110,21 +145,5 @@ var paw = {
   },
 };
 
-/*
 paw.styles.add_style(new DivRect());
-
-var rect = {x: 10, y: 10, width: 50, height: 50,
-	    style: 'div', type: 'rect'};
-var rect2 = {x: 150, y: 150, width: 80, height: 50,
-	     style: 'div', type: 'rect'};
-// could also check to see if there was a 'transform' property on the entity?
-var test_trans = new Base.Transform();
-test_trans.translate(100, -10);
-test_trans.rotate(3.141 * 0.25);
-paw.transform.pushState();
-paw.transform.add(test_trans);
-paw.draw(rect);
-//paw.transform.popState();
-//paw.transform.add(test_trans.copy());
-paw.draw(rect2);
-*/
+paw.styles.add_style(new CanvasLine());
