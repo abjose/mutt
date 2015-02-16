@@ -17,12 +17,6 @@
 TODO:
 - have entities be much more flexible - can have draw, transform, ...
   but not necessary
-- add MultiIndex and friends
-
-Minimal woof is...not doing that right now.  
-But ultimately just messenger? Easy enough to have on entities and
-styles...but want to have woof be its own object or a mixin or
-component? Also want to allow events or what?
 
 Minimal steps to prototype bootstrapping interface-creator:
 - create woof so very easy to introspect/modify event settings
@@ -30,17 +24,100 @@ Minimal steps to prototype bootstrapping interface-creator:
   and later these can be modified through mutt itself
 - need to have some way of replicating structure of entities made in-mutt
 
-Don't worry about bootstrapping for now Get demo working - something
+Don't worry about bootstrapping for now. Get demo working - something
 like a graph where you can select the style if each edge/node
 
+Remember - don't worry about getting views to work in context of transform
+hierarchy. Views are weird, and should just have a special draw function. Maybe.
+
+Arguments for allowing multiple instances of a single entity in transform hier:
+- simpler to have same entity in different places in multiple layers or whatever
+- can like have lots of repeated entities, if that's a thing you want to do
+Against:
+- confusing...
+- might lead to ambiguity when looking at entities
+- makes events more complex
+- makes storing temp objects locally more comples
+
+Remember - liked idea of get_children that could be defined separately by 
+different entities. But would need to call something more specific considering
+number of interpretations of 'children'.
+
 mutt 2du:
-- move shit to separate files
 - add spatial relation stuff to Rect and Line?
 - add simple spatial query to MultiIndex
 - add clipping
 - make view
 - think about messenger stuff
 */
+
+interface EntityToNodeMap { [entity: Entity]: TransformNode; }
+class TransformHierarchy {
+  // TODO: decide if can have multiple copies of a single entity in hierarchy
+  root: TransformNode;
+  entity_to_node: EntityToNodeMap;
+
+  constructor() {
+    root = new TransformNode();
+    entity_to_node = {};
+  }
+  
+  // How to make it easy to transform query entities - like want to pass
+  // point or region down through hierarchy and test on each...
+  // I guess geo relations could mostly handle this on their own...
+
+  // should add stuff for adding/modifying/removing transforms so can keep
+  // everything up to date
+
+  // For now don't implement - just assume well-formed tree
+  // makes_cycle(node: TransformNode) { }
+
+  get_node(entity: Entity): TransformNode {
+    return this.entity_to_node[entity];
+  }
+  
+  get_transform_path(a: Entity, b: Entity) {
+    // Return path of TransformNodes from a to b.
+    var a_path = [this.get_node(a)], b_path = [this.get_node(b)];
+    var curr_a = this.get_node(a).parent, curr_b = this.get_node(b).parent;
+
+    // Hop back until we reach the common ancestor
+    while (curr_a.id != curr_b.id) {
+      a_path.push(curr_a);
+      b_path.push(curr_b);
+      curr_a = curr_a.parent;
+      curr_b = curr_b.parent;
+    }
+    // Add common ancestor to path
+    a_path.push(curr_a); 
+    
+    // To get the full path, reverse b_path and append to a_path.
+    return a_path.concat(b_path.reverse());
+  }
+  
+  transform_between(a: Entity, b: Entity): Transform {
+    var path = get_transform_path(a, b);
+    return path.reduce(function(transform, node) {
+      return transform.multiply(node.transform);
+    }, new Base.Transform());
+  }
+}
+
+class TransformNode {
+  // TODO: do some kind of cacheing
+  transform: Transform;
+  parent: TransformNode;
+  children: TransformNode[];
+  id: string;
+  
+  constructor() {
+    this.children = [];
+  }
+  
+  add_child(node: TransformNode) {
+    this.children.push(node);
+  }
+}
 
 var mutt = {
   entities: new Base.MultiIndex(),
