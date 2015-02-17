@@ -12,7 +12,7 @@ module Base {
     }
     
     put(entity) {
-      entity['id'] = Math.random();
+      entity['id'] = Utility.UUID();
       this.index[entity.id] = entity; // lol
     }
     

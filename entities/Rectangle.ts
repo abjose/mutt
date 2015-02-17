@@ -4,14 +4,14 @@ module Entity {
     style: string;
     x: number; y: number;
     width: number; height: number;
-    transform: Base.Transform;
+    id: string;
 
     constructor(args) {
       this.x = args.x; this.y = args.y
       this.width = args.width; this.height = args.height;
       this.type = 'rect';
       this.style = args.style;
-      this.transform = undefined || args.transform;
+      this.id = Utility.UUID();
     }
   }
 }
