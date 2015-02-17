@@ -1,6 +1,7 @@
 /// <reference path="libs/gl-matrix.d.ts" />
 /// <reference path="base/Transform.ts" />
 /// <reference path="paw.ts" />
+/// <reference path="utility/uuid.ts" />
 /// <reference path="base/Entity.ts" />
 /// <reference path="base/MultiIndex.ts" />
 /// <reference path="base/Style.ts" />
@@ -13,10 +14,11 @@
 /// <reference path="styles/Rectangle/DivRect.ts" />
 /// <reference path="styles/Line/CanvasLine.ts" />
 
+
 /*
 TODO:
-- have entities be much more flexible - can have draw, transform, ...
-  but not necessary
+- CHANGE MUTT to use scene graph rather than expecting entities to have
+  their own transforms defined.
 
 Minimal steps to prototype bootstrapping interface-creator:
 - create woof so very easy to introspect/modify event settings
@@ -51,76 +53,132 @@ mutt 2du:
 - think about messenger stuff
 */
 
-interface EntityToNodeMap { [entity: Entity]: TransformNode; }
+interface EntityToNodeMap { [entity_id: string]: TransformNode; }
 class TransformHierarchy {
   // TODO: decide if can have multiple copies of a single entity in hierarchy
+  // TODO: decide if tree or DAG or whatever, add checks for that.
   root: TransformNode;
   entity_to_node: EntityToNodeMap;
-
+  
   constructor() {
-    root = new TransformNode();
-    entity_to_node = {};
+    this.root = new TransformNode();
+    this.entity_to_node = {};
+  }
+
+  add_entity(entity: Base.Entity) {
+    this.entity_to_node[entity.id] = new TransformNode();
+    this.entity_to_node[entity.id].parent = this.root;
   }
   
-  // How to make it easy to transform query entities - like want to pass
-  // point or region down through hierarchy and test on each...
-  // I guess geo relations could mostly handle this on their own...
-
-  // should add stuff for adding/modifying/removing transforms so can keep
-  // everything up to date
-
-  // For now don't implement - just assume well-formed tree
-  // makes_cycle(node: TransformNode) { }
-
-  get_node(entity: Entity): TransformNode {
-    return this.entity_to_node[entity];
+  remove_entity(entity: Base.Entity) {
+    var node = this.get_node(entity);
+    node.parent.remove_child(node);
+    delete this.entity_to_node[entity.id];
+    this.entity_to_node[entity.id] = undefined;  // necessary?
   }
   
-  get_transform_path(a: Entity, b: Entity) {
-    // Return path of TransformNodes from a to b.
-    var a_path = [this.get_node(a)], b_path = [this.get_node(b)];
-    var curr_a = this.get_node(a).parent, curr_b = this.get_node(b).parent;
+  get_node(entity: Base.Entity): TransformNode {
+    return this.entity_to_node[entity.id];
+  }
 
-    // Hop back until we reach the common ancestor
-    while (curr_a.id != curr_b.id) {
-      a_path.push(curr_a);
-      b_path.push(curr_b);
-      curr_a = curr_a.parent;
-      curr_b = curr_b.parent;
+  set_relation(parent: Base.Entity, child: Base.Entity) {
+    // TODO: check to make sure adding relation won't ruin graph/tree
+    var parent_node = this.get_node(parent);
+    var child_node  = this.get_node(child);
+    // remove old relation
+    child_node.parent.remove_child(child_node);
+    // create new relation
+    parent_node.add_child(child_node);
+    child_node.set_parent(parent_node);
+  }
+  
+  get_transform(entity: Base.Entity) {
+    return this.get_node(entity).transform;
+  }
+
+  get_common_ancestor(a: TransformNode, b: TransformNode): TransformNode {
+    var seen = {};  // seen node ids
+    while (true) {
+      if (a.id in seen) return a;
+      seen[a.id] = true;
+      if (b.id in seen) return b;
+      seen[b.id] = true;
+      if (a.id != this.root.id) a = a.parent;
+      if (b.id != this.root.id) b = b.parent;
     }
-    // Add common ancestor to path
-    a_path.push(curr_a); 
+  }
+
+  get_path(a: TransformNode, b: TransformNode): TransformNode[] {
+    // Build paths to common ancestor.
+    var ca = this.get_common_ancestor(a, b);
+    var a_path = [], b_path = [];
+    while (a.id != ca.id) {
+      a_path.push(a);
+      a = a.parent;
+    }
+    while (b.id != ca.id) {
+      b_path.push(b);
+      b = b.parent;
+    }
+
+    // Append paths and return.
+    return a_path.concat(ca, b_path.reverse());
+  }
     
-    // To get the full path, reverse b_path and append to a_path.
-    return a_path.concat(b_path.reverse());
+  transform_between(a: Base.Entity, b: Base.Entity): Base.Transform {
+    var path = this.get_path(this.get_node(a), this.get_node(b));
+    return this.transform_from_path(path);
+  }
+
+  transform_from_root(entity: Base.Entity) {
+    var path = this.get_path(this.root, this.get_node(entity));
+    return this.transform_from_path(path); 
   }
   
-  transform_between(a: Entity, b: Entity): Transform {
-    var path = get_transform_path(a, b);
+  transform_from_path(path: TransformNode[]) {
     return path.reduce(function(transform, node) {
       return transform.multiply(node.transform);
     }, new Base.Transform());
   }
 }
 
+interface ChildrenMap { [node_id: string]: TransformNode }
 class TransformNode {
   // TODO: do some kind of cacheing
-  transform: Transform;
+  transform: Base.Transform;
   parent: TransformNode;
-  children: TransformNode[];
+  children: ChildrenMap;
   id: string;
   
   constructor() {
-    this.children = [];
+    this.transform = new Base.Transform();
+    this.parent = undefined;
+    this.children = {};
+    this.id = Utility.UUID();
+  }
+
+  set_parent(parent: TransformNode) {
+    this.parent = parent;
   }
   
-  add_child(node: TransformNode) {
-    this.children.push(node);
+  add_child(child: TransformNode) {
+    this.children[child.id] = child;
+  }
+  
+  remove_child(child: TransformNode) {
+    this.children[child.id] = undefined;
+  }
+  
+  get_children() {
+    return Object.keys(this.children).map(function (id) {
+      return this.children[id];
+    });
   }
 }
 
 var mutt = {
   entities: new Base.MultiIndex(),
+  scene: new TransformHierarchy(),  // better name?
 
   update: function() {
     var entities_to_draw = this.entities.query();
@@ -133,27 +191,28 @@ var mutt = {
   
   draw: function(entity) {
     // sure you want this? Could just force all entities to define 'draw'
-    var is_transformed = entity.transform != undefined;
     var has_draw = entity.draw != undefined;
-    if (is_transformed) {
-      paw.transform.pushState();
-      paw.transform.add(entity.transform);
-    }
+
+    paw.transform.pushState();
+    //paw.transform.add(entity.transform);
+    paw.transform.add(this.scene.transform_from_root(entity));
+    
     if (has_draw) {
       entity.draw();
     } else {
       paw.draw(entity);
     }
-    if (is_transformed) {
-      paw.transform.popState();
-    }
+    
+    paw.transform.popState();
   },
 
   add: function(entity) {
-    this.entities.put(entity);
+    this.entities.put(entity);  // change to add?
+    this.scene.add_entity(entity);
   },
 
   remove: function(entity) {
     this.entities.remove(entity);
+    this.scene.remove_entity(entity);
   },
 }

@@ -15,19 +15,25 @@
 	src="libs/gl-matrix/src/gl-matrix/mat2d.js"></script>
 <script type="text/javascript" src="paw.js"></script>
 <script type="text/javascript" src="mutt.js"></script>
-<script>
+  <script>
+  // make sure to test out parent-child relation - make a grid of squares
+  // or something connected by lines! and then rotate and scale and stuff
   // something like
-  //paw.styles.add_style(new Style.DivRect());
-  var r1 = new Entity.Rectangle({x: 0, y: 0, width: 50, height: 50,
-				 style: 'div',
-				 transform: new Base.Transform()});
-  r1.transform.scale(3, 0.5);
-  r1.transform.rotate(3.141 * 0.25);
-  r1.transform.translate(250, 250);
-  var r2 = new Entity.Rectangle({x: 70, y: 70, width: 25, height: 25,
-				 style: 'div'});
-  mutt.add(r1);
-  mutt.add(r2);
+  // then can use grid to also test event stuff when do that
+
+  var side = 10, gap = 10;
+  var x_count = 10, y_count = 10;
+  for (var x = 0; x < x_count; x++) {
+    for (var y = 0; y < y_count; y++) {
+      mutt.add(new Entity.Rectangle({x: x*(side+gap), y: y*(side+gap),
+				     width: side, height: side,
+				     style: 'div'}));
+    }
+  }
+
+  //r1.transform.scale(3, 0.5);
+  //r1.transform.rotate(3.141 * 0.25);
+  //r1.transform.translate(250, 250);
   mutt.update();
   //mutt.remove(r2);
   //mutt.update();
