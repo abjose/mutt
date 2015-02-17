@@ -25,15 +25,34 @@
   var x_count = 10, y_count = 10;
   for (var x = 0; x < x_count; x++) {
     for (var y = 0; y < y_count; y++) {
-      mutt.add(new Entity.Rectangle({x: x*(side+gap), y: y*(side+gap),
+      var xc = x*(side+gap), yc = y*(side+gap);
+      mutt.add(new Entity.Rectangle({x: xc, y: yc,
 				     width: side, height: side,
 				     style: 'div'}));
+      if (x != x_count-1)
+	mutt.add(new Entity.Line({start: new Entity.Point(xc+side+2,
+							  yc+side/2),
+				  end: new Entity.Point(xc+side+gap-2,
+							yc+side/2),
+				  style: 'canvas'}));
+      if (y != y_count-1)
+	mutt.add(new Entity.Line({start: new Entity.Point(xc+side/2,
+							  yc+side+2),
+				  end: new Entity.Point(xc+side/2,
+							yc+side+gap-2),
+				  style: 'canvas'}));
+
     }
   }
 
-  //r1.transform.scale(3, 0.5);
-  //r1.transform.rotate(3.141 * 0.25);
-  //r1.transform.translate(250, 250);
+
+// try rotating sub-part separately
+
+
+  mutt.scene.root.transform.scale(.75, .5);
+  mutt.scene.root.transform.rotate(3.141 * 0.25);
+  mutt.scene.root.transform.translate(150, 100);
+
   mutt.update();
   //mutt.remove(r2);
   //mutt.update();
