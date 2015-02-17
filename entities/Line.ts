@@ -3,9 +3,9 @@ module Entity {
   export class Line implements Base.Entity {
     type: string;
     style: string;
+    id: string;
     start: Entity.Point;
     end: Entity.Point;
-    id: string;
     
     constructor(args) {
       this.start = args.start;

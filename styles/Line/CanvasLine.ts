@@ -16,6 +16,7 @@ module Style {
 	line[this.secret_place].canvas = document.createElement('canvas');
 	line[this.secret_place].canvas.width = '1000';
 	line[this.secret_place].canvas.height = '1000';
+	line[this.secret_place].canvas.style.position = 'absolute';
 	document.body.appendChild(line[this.secret_place].canvas);
       }
       
@@ -26,7 +27,7 @@ module Style {
       ctx.transform(transform.T[0], transform.T[1], transform.T[2],
                     transform.T[3], transform.T[4], transform.T[5]);
       ctx.beginPath();
-      ctx.moveTo(line.start.x, line.end.y);
+      ctx.moveTo(line.start.x, line.start.y);
       ctx.lineTo(line.end.x, line.end.y);
       ctx.stroke();
       ctx.restore();
