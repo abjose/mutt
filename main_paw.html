@@ -4,8 +4,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!--<canvas id="myCanvas" width="500" height="500"></canvas>-->
-  <!--<div id="myDiv">blah</div>-->
 </body>
 <script type="text/javascript"
 	src="libs/gl-matrix/src/gl-matrix/common.js"></script>
@@ -15,15 +13,27 @@
 	src="libs/gl-matrix/src/gl-matrix/mat2d.js"></script>
 <script type="text/javascript" src="paw.js"></script>
 <script>
-  var rect1 = new Entity.Rectangle({x: 10, y: 10,
+  var rect1 = new Entity.Rectangle({x: 0, y: 0,
 				    width: 50, height: 50,
 				    style: 'div'});
-  var rect2 = new Entity.Rectangle({x: 180, y: 10,
+  var rect2 = new Entity.Rectangle({x: 170, y: 0,
 				    width: 80, height: 50,
 				    style: 'div'});
-  var line1 = new Entity.Line({start: new Entity.Point(70, 35),
-			       end: new Entity.Point(170, 35),
-			       style: 'canvas'});
+  var line1 = new Entity.Line({start: new Entity.Point(60, 0),
+   			       end:   new Entity.Point(160, 50),
+  			       style: 'canvas'});
+  var line2 = new Entity.Line({start: new Entity.Point(60, 50),
+  			       end:   new Entity.Point(160, 0),
+  			       style: 'canvas'});
+  var line3 = new Entity.Line({start: new Entity.Point(60, 0),
+  			       end:   new Entity.Point(160, 0),
+  			       style: 'canvas'});
+  var line4 = new Entity.Line({start: new Entity.Point(60, 50),
+  			       end:   new Entity.Point(160, 50),
+  			       style: 'canvas'});
+
+  
+
 
   var test_trans = new Base.Transform();
   test_trans.translate(150, 20);
@@ -32,11 +42,11 @@
   paw.transform.pushState();
   paw.transform.add(test_trans);
   
-  paw.draw(line1);
   paw.draw(rect1);
-
-  //paw.transform.popState();
-  //paw.transform.add(test_trans.copy());
   paw.draw(rect2);
+  paw.draw(line1);
+  paw.draw(line2);
+  paw.draw(line3);
+  paw.draw(line4);
 </script>
 </html>
