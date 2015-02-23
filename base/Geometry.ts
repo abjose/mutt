@@ -1,8 +1,54 @@
 
 module Geometry {
-  export interface Primitive {
+  export class RelationManager {
+    // Still don't like this, would prefer if could just say
+    // entity.contains(other_entity) or whatever and all transform stuff
+    // would be handled
+    scene: Base.TransformHierarchy;
+    constructor(scene: Base.TransformHierarchy) {
+      this.scene = scene;
+    }
+
+    get_transform(entity: Base.Entity) {
+      var t = new Transform();
+      if (this.scene.get_node(entity) != undefined)
+	t = this.scene.transform_to_root(entity)
+      return t;
+    }
+
+    relation(relation, args) {
+      // TODO: probably better to just transform one entity to the other
+      var t1 = args.t1 || this.get_transform(args.e1);
+      var t1 = args.t2 || this.get_transform(args.e2);
+      var geo1 = args.e1.to_geo().transform(t1);
+      var geo2 = args.e1.to_geo().transform(t2);
+      return geo1[relation](geo2);
+    }
+    
+    distance(args) {
+      return relation('distance', args);
+    }
+    contains(args) {
+      return relation('contains', args);
+    }
+    within(args) {
+      return relation('within', args);
+    }
+    crosses(args) {
+      return relation('crosses', args);
+    }
+    intersects(args) {
+      return relation('intersects', args);
+    }
+    disjoint(args) {
+      return relation('disjoint', args);
+    }    
+  }
+  
+  interface Primitive {
     type: string;
     get_points(): Point[];
+    transform(transform: Base.Transform): Primitive;
     distance(other: Primitive): boolean;
     
     contains(other: Primitive): boolean;
@@ -16,6 +62,10 @@ module Geometry {
     type: string;
     constructor(public x, public y) { this.type = 'point'; }
     get_points() { return [this]; }
+
+    transform(transform: Base.Transform) {
+      return transform(this);
+    }
 
     distance(other: Primitive) {
       return min_dist(this.get_points(), other.get_points());
@@ -56,6 +106,11 @@ module Geometry {
       return this.points;
     }
 
+    transform(transform: Base.Transform) {
+      var new_pts = transform.transform_points(this.points);
+      return new Line(new_pts);
+    }
+
     distance(other: Primitive) {
       return min_dist(this.get_points(), other.get_points());
     }
@@ -69,6 +124,7 @@ module Geometry {
     }
     
     crosses(other: Primitive) {
+      // TODO: ideally remove type and type-checks
       if (other.type == 'point') return false;
       if (other.type == 'polygon') return other.crosses(this);
       // Otherwise check for segment intersections
@@ -97,6 +153,11 @@ module Geometry {
 
     get_points() {
       return this.points.concat(this.points[0]);
+    }
+
+    transform(transform: Base.Transform) {
+      var new_pts = transform.transform_points(this.points);
+      return new Polygon(new_pts);
     }
     
     distance(other: Primitive) {
