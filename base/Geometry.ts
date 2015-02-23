@@ -69,18 +69,11 @@ module Geometry {
     }
     
     crosses(other: Primitive) {
-      var other_pts = other.get_points();
       if (other.type == 'point') return false;
       if (other.type == 'polygon') return other.crosses(this);
       // Otherwise check for segment intersections
-      var pts = this.get_points();
-      var other_pts = other.get_points();
-      for (var i = 0; i < pts.length-1; i++) {
-	for (var j = 0; j < other_pts.length-1; j++) {
-	  if (segments_intersect(pts[i],pts[i+1], other_pts[j],other_pts[j+1]))
-	    return true;
-	}
-      }
+      if (segments_intersect(this.get_points(), other.get_points()))
+	return true;
       return false;
     }
     
@@ -142,6 +135,7 @@ module Geometry {
 	if (point_within(other_pts[i], pts))
 	  return true;
       }
+      if (segments_intersect(pts, other_pts)) return true;
       if (other.intersects(this)) return true;
       return false;
     }
@@ -152,10 +146,20 @@ module Geometry {
   }
   
   // Do lines a0-a1 and b0-b1 intersect?
-  function segments_intersect(a0: Point, a1: Point, b0: Point, b1: Point) {
+  function segment_intersects(a0: Point, a1: Point, b0: Point, b1: Point) {
     if (ccw(a0, a1, b0) * ccw(a0, a1, b1) > 0) return false;
     if (ccw(b0, b1, a0) * ccw(b0, b1, a1) > 0) return false;
     return true;
+  }
+
+  function segments_intersect(a: Point[], b: Point[]) {
+    // see if (linked) segments described by a intersect with any in b
+    for (var i = 0; i < a.length-1; i++) {
+      for (var j = 0; j < b.length-1; j++) {
+	if (segment_intersects(a[i], a[i+1], b[j], b[j+1]))
+	  return true;
+      }
+    }
   }
 
   function point_within(pt: Point, pts: Point[]) {
