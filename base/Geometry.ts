@@ -47,7 +47,7 @@ module Geometry {
   
   interface Primitive {
     type: string;
-    get_points(): Point[];
+    get_points(): Vertex[];
     transform(transform: Base.Transform): Primitive;
     distance(other: Primitive): boolean;
     
@@ -58,7 +58,7 @@ module Geometry {
     disjoint(other: Primitive): boolean;
   }
   
-  export class Point implements Primitive{
+  export class Vertex implements Primitive{
     type: string;
     constructor(public x, public y) { this.type = 'point'; }
     get_points() { return [this]; }
@@ -93,11 +93,11 @@ module Geometry {
     }
   }
 
-  export class Line implements Primitive {
+  export class Polyline implements Primitive {
     type: string;
-    private points: Point[];
+    private points: Vertex[];
 
-    constructor(points: Point[]) {
+    constructor(points: Vertex[]) {
       this.type = 'line';
       this.points = points || [];
     }
@@ -108,7 +108,7 @@ module Geometry {
 
     transform(transform: Base.Transform) {
       var new_pts = transform.transform_points(this.points);
-      return new Line(new_pts);
+      return new Polyline(new_pts);
     }
 
     distance(other: Primitive) {
@@ -144,9 +144,9 @@ module Geometry {
 
   export class Polygon implements Primitive {
     type: string;
-    private points: Point[];
+    private points: Vertex[];
 
-    constructor(points: Point[]) {
+    constructor(points: Vertex[]) {
       this.type = 'polygon';
       this.points = points || [];
     }
@@ -207,13 +207,13 @@ module Geometry {
   }
   
   // Do lines a0-a1 and b0-b1 intersect?
-  function segment_intersects(a0: Point, a1: Point, b0: Point, b1: Point) {
+  function segment_intersects(a0: Vertex, a1: Vertex, b0: Vertex, b1: Vertex) {
     if (ccw(a0, a1, b0) * ccw(a0, a1, b1) > 0) return false;
     if (ccw(b0, b1, a0) * ccw(b0, b1, a1) > 0) return false;
     return true;
   }
 
-  function segments_intersect(a: Point[], b: Point[]) {
+  function segments_intersect(a: Vertex[], b: Vertex[]) {
     // see if (linked) segments described by a intersect with any in b
     for (var i = 0; i < a.length-1; i++) {
       for (var j = 0; j < b.length-1; j++) {
@@ -223,12 +223,12 @@ module Geometry {
     }
   }
 
-  function point_within(pt: Point, pts: Point[]) {
+  function point_within(pt: Vertex, pts: Vertex[]) {
     // length - 1 because assumes includes start point twice...
     return Math.abs(sum_ccw(pt, pts)) == pts.length-1;
   }
 
-  function sum_ccw(pt: Point, points: Point[]) {
+  function sum_ccw(pt: Vertex, points: Vertex[]) {
     // sum results of ccw for all pairs of internal points
     var sum = 0;
     for (var i = 0; i < points.length - 1; i++) {
@@ -240,7 +240,7 @@ module Geometry {
   }
   
   // from http://www.mathcs.duq.edu/simon/Fall05/cs300notes3.html
-  function ccw(p0: Point, p1: Point, p2: Point) {
+  function ccw(p0: Vertex, p1: Vertex, p2: Vertex) {
     var dx1 = (p1.x - p0.x), dy1 = (p1.y - p0.y);
     var dx2 = (p2.x - p0.x), dy2 = (p2.y - p0.y);
     if (dy1*dx2 < dy2*dx1) return 1;
@@ -251,15 +251,15 @@ module Geometry {
     return 1;
   }
 
-  function dist_squared(a: Point, b: Point) {
+  function dist_squared(a: Vertex, b: Vertex) {
     return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
   }
   
-  function dist(a: Point, b: Point) {
+  function dist(a: Vertex, b: Vertex) {
     return Math.sqrt(dist_squared(a, b));
   }
 
-  function min_dist(a: Point[], b: Point[]) {
+  function min_dist(a: Vertex[], b: Vertex[]) {
     // TODO: replace this either with something that gets shortest distance
     // between any two line segments, or allow representative points and just
     // get distance between those.
@@ -273,14 +273,14 @@ module Geometry {
 
 
 
-var poly1 = new Geometry.Polygon([new Geometry.Point(0, 0),
-				  new Geometry.Point(0, 1),
-				  new Geometry.Point(1, 1),
-				  new Geometry.Point(1, 0)]);
-var poly2 = new Geometry.Polygon([new Geometry.Point(.2, .2),
-				  new Geometry.Point(.2, .8),
-				  new Geometry.Point(.8, .8),
-				  new Geometry.Point(.8, .2)]);
+var poly1 = new Geometry.Polygon([new Geometry.Vertex(0, 0),
+				  new Geometry.Vertex(0, 1),
+				  new Geometry.Vertex(1, 1),
+				  new Geometry.Vertex(1, 0)]);
+var poly2 = new Geometry.Polygon([new Geometry.Vertex(.2, .2),
+				  new Geometry.Vertex(.2, .8),
+				  new Geometry.Vertex(.8, .8),
+				  new Geometry.Vertex(.8, .2)]);
 
 // lol they don't intersect when on top of each other :'(
 
