@@ -1,4 +1,3 @@
-
 module Base {
   /* TODO
      - add 'origin'? And do translations before/after other things.
@@ -30,7 +29,7 @@ module Base {
     }
     matrixString() {
       // maybe just loop
-      return String(this.T[0]) + ','+String(this.T[1])
+      return  String(this.T[0]) + ','+String(this.T[1])
 	+ ','+String(this.T[2]) + ','+String(this.T[3])
 	+ ','+String(this.T[4]) + ','+String(this.T[5]);
     }
@@ -67,20 +66,18 @@ module Base {
     mul(other: Transform) {
       return this.multiply(other);
     }
-    //transform(pt: Entity.Point) {
-    transform(pt) {
-      // return transformed copy of pt
-      var temp_pt = vec2.fromValues(pt.x, pt.y);
-      vec2.transformMat2d(temp_pt, temp_pt, this.T);
-      //return new Entities.Point(temp_pt[0], temp_pt[1]);
-      return {x: temp_pt[0], y: temp_pt[1]};
-    }
 
-    transform_points(pts) {
-      var out_pts = []
-      for (var i = 0; i < pts.length; i++)
-	out_pts.push(this.transform(pts[i]));
-      return out_pts;
+    transform(vert: Geometry.Vertex) {
+      // return transformed copy of vert
+      var temp_vert = vec2.fromValues(vert.x, vert.y);
+      vec2.transformMat2d(temp_vert, temp_vert, this.T);
+      return new Geometry.Vertex(temp_vert[0], temp_vert[1]);
+    }
+    transform_verts(verts: Geometry.Vertex[]) {
+      var out = []
+      for (var i = 0; i < verts.length; i++)
+	out.push(this.transform(verts[i]));
+      return out;
     }
   }
 
@@ -167,7 +164,7 @@ module Base {
     }
 
     transform_to_root(entity: Base.Entity) {
-      return this.transform_from_root(entity).inverse();
+      return this.transform_from_root(entity).invert();
     }
 
     transform_from_path(path: TransformNode[]) {

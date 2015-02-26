@@ -1,209 +1,101 @@
-
 module Geometry {
-  export class RelationManager {
-    // Still don't like this, would prefer if could just say
-    // entity.contains(other_entity) or whatever and all transform stuff
-    // would be handled
-    scene: Base.TransformHierarchy;
-    constructor(scene: Base.TransformHierarchy) {
-      this.scene = scene;
-    }
-
-    get_transform(entity: Base.Entity) {
-      var t = new Transform();
-      if (this.scene.get_node(entity) != undefined)
-	t = this.scene.transform_to_root(entity)
-      return t;
-    }
-
-    relation(relation, args) {
-      // TODO: probably better to just transform one entity to the other
-      var t1 = args.t1 || this.get_transform(args.e1);
-      var t1 = args.t2 || this.get_transform(args.e2);
-      var geo1 = args.e1.to_geo().transform(t1);
-      var geo2 = args.e1.to_geo().transform(t2);
-      return geo1[relation](geo2);
-    }
-    
-    distance(args) {
-      return relation('distance', args);
-    }
-    contains(args) {
-      return relation('contains', args);
-    }
-    within(args) {
-      return relation('within', args);
-    }
-    crosses(args) {
-      return relation('crosses', args);
-    }
-    intersects(args) {
-      return relation('intersects', args);
-    }
-    disjoint(args) {
-      return relation('disjoint', args);
-    }    
-  }
-  
+  enum PrimitiveType {vertex, polyline, polygon}
   interface Primitive {
-    type: string;
-    get_points(): Vertex[];
-    transform(transform: Base.Transform): Primitive;
-    distance(other: Primitive): boolean;
-    
-    contains(other: Primitive): boolean;
-    within(other: Primitive): boolean;
-    crosses(other: Primitive): boolean;
-    intersects(other: Primitive): boolean;
-    disjoint(other: Primitive): boolean;
+    type: PrimitiveType;
+    get_verts(): Vertex[];
   }
   
   export class Vertex implements Primitive{
-    type: string;
-    constructor(public x, public y) { this.type = 'point'; }
-    get_points() { return [this]; }
-
-    transform(transform: Base.Transform) {
-      return transform(this);
-    }
-
-    distance(other: Primitive) {
-      return min_dist(this.get_points(), other.get_points());
-    }
-
-    contains(other: Primitive) {
-      return false;
-    }
-
-    within(other: Primitive) {
-      return point_within(this, other.get_points());
-    }
-
-    crosses(other: Primitive) {
-      return false;
+    type: PrimitiveType;
+    constructor(public x: number, public y: number) {
+      this.type = PrimitiveType.vertex;
     }
     
-    intersects(other: Primitive) {
-      // could return true if very close?
-      return this.within(other);
+    get_verts() {
+      return [this];
     }
 
-    disjoint(other: Primitive) {
-      return !this.intersects(other);
+    transform(t: Base.Transform) {
+      return t.transform(this);
     }
   }
 
   export class Polyline implements Primitive {
-    type: string;
-    private points: Vertex[];
+    type: PrimitiveType;
+    private vertices: Vertex[];
 
-    constructor(points: Vertex[]) {
-      this.type = 'line';
-      this.points = points || [];
+    constructor(verts: Vertex[]) {
+      this.type = PrimitiveType.polyline;
+      this.vertices = verts || [];
     }
     
-    get_points() {
-      return this.points;
-    }
-
-    transform(transform: Base.Transform) {
-      var new_pts = transform.transform_points(this.points);
-      return new Polyline(new_pts);
+    get_verts() {
+      return this.vertices;
     }
 
-    distance(other: Primitive) {
-      return min_dist(this.get_points(), other.get_points());
-    }
-
-    contains(other: Primitive) {
-      return false;
-    }
-    
-    within(other: Primitive) {
-      return other.contains(this);
-    }
-    
-    crosses(other: Primitive) {
-      // TODO: ideally remove type and type-checks
-      if (other.type == 'point') return false;
-      if (other.type == 'polygon') return other.crosses(this);
-      // Otherwise check for segment intersections
-      if (segments_intersect(this.get_points(), other.get_points()))
-	return true;
-      return false;
-    }
-    
-    intersects(other: Primitive) {
-      return this.crosses(other) || this.within(other);
-    }
-    
-    disjoint(other: Primitive) {
-      return !this.intersects(other);
+    transform(t: Base.Transform) {
+      return new Polyline(t.transform_verts(this.vertices));
     }
   }
 
   export class Polygon implements Primitive {
-    type: string;
-    private points: Vertex[];
+    type: PrimitiveType;
+    private vertices: Vertex[];
 
-    constructor(points: Vertex[]) {
-      this.type = 'polygon';
-      this.points = points || [];
-    }
-
-    get_points() {
-      return this.points.concat(this.points[0]);
+    constructor(verts: Vertex[]) {
+      this.type = PrimitiveType.polygon;
+      this.vertices = verts || [];
     }
 
-    transform(transform: Base.Transform) {
-      var new_pts = transform.transform_points(this.points);
-      return new Polygon(new_pts);
-    }
-    
-    distance(other: Primitive) {
-      return min_dist(this.get_points(), other.get_points());
+    get_verts() {
+      return this.vertices.concat(this.vertices[0]);
     }
 
-    contains(other: Primitive) {
-      var pts = this.get_points();
-      var other_pts = other.get_points();
-      for (var i = 0; i < other_pts.length; i++) {
-	if (!point_within(other_pts[i], pts))
-	  return false;
-      }
-      return true;
+    transform(t: Base.Transform) {
+      return new Polygon(t.transform_verts(this.vertices));
     }
-
-    within(other: Primitive) {
-      return other.contains(this);
-    }
-    
-    crosses(other: Primitive) {
-      var pts = this.get_points();
-      var other_pts = other.get_points();
-      var initial_relation = point_within(other_pts[0], pts);
-      for (var i = 1; i < other_pts.length; i++) {
-	if (point_within(other_pts[i], pts) != initial_relation)
-	  return true;
-      }
+  }
+  
+  export function distance(a: Primitive, b: Primitive) {
+    return min_dist(a.get_verts(), b.get_verts());
+  }
+  
+  export function contains(a: Primitive, b: Primitive) {
+    if (a.type == PrimitiveType.vertex || a.type == PrimitiveType.polyline)
       return false;
-    }
-
-    intersects(other: Primitive) {
-      var pts = this.get_points();
-      var other_pts = other.get_points();
-      for (var i = 0; i < other_pts.length; i++) {
-	if (point_within(other_pts[i], pts))
-	  return true;
-      }
-      if (segments_intersect(pts, other_pts)) return true;
-      if (other.intersects(this)) return true;
+    var av = a.get_verts();
+    var bv = b.get_verts();
+    for (var i = 0; i < bv.length; i++)
+      if (!point_within(bv[i], av))
+	return false;
+    return true; 
+  }
+  
+  export function within(a: Primitive, b: Primitive) {
+    return contains(b, a);
+  }
+  
+  export function crosses(a: Primitive, b: Primitive) {
+    if (a.type == PrimitiveType.vertex || b.type == PrimitiveType.vertex)
       return false;
-    }
-    
-    disjoint(other: Primitive) {
-      return !this.intersects(other);
-    }
+    return !within(a, b) && intersects(a, b);
+  }
+  
+  export function intersects(a: Primitive, b: Primitive) {
+    var av = a.get_verts();
+    var bv = b.get_verts();
+    for (var i = 0; i < bv.length; i++) 
+      if (point_within(bv[i], av))
+	return true;
+    for (var i = 0; i < av.length; i++) 
+      if (point_within(av[i], bv))
+	return true;
+    if (segments_intersect(av, bv)) return true;
+    return false;
+  }
+  
+  export function disjoint(a: Primitive, b: Primitive) {
+    return !intersects(a, b);
   }
   
   // Do lines a0-a1 and b0-b1 intersect?
@@ -284,8 +176,6 @@ var poly2 = new Geometry.Polygon([new Geometry.Vertex(.2, .2),
 
 // lol they don't intersect when on top of each other :'(
 
-console.log('intersect?: ', poly1.intersects(poly2));
-console.log('1 contains 2?: ', poly1.contains(poly2));
-console.log('1 within 2?: ', poly1.within(poly2));
-
-  
+console.log('intersect?: ', Geometry.intersects(poly1, poly2));
+console.log('1 contains 2?: ', Geometry.contains(poly1, poly2));
+console.log('1 within 2?: ', Geometry.within(poly1, poly2));
