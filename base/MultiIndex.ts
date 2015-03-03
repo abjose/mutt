@@ -28,5 +28,4 @@ module Base {
       return this.index; // TODO: lol
     }
   }
-
 }
