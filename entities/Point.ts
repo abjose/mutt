@@ -11,12 +11,8 @@ module Entity {
       this.id = Utility.UUID();
     }
 
-    distance(pt: Entity.Point) {
-      return Math.sqrt(this.norm(pt));
-    }
-
-    norm(pt: Entity.Point) {
-      return Math.pow(this.x - pt.x, 2) + Math.pow(this.y - pt.y, 2);
+    to_geo() {
+      return new Geometry.Vertex(this.x, this.y);
     }
     
   }

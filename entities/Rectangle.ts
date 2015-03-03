@@ -13,5 +13,13 @@ module Entity {
       this.style = args.style;
       this.id = Utility.UUID();
     }
+
+    to_geo() {
+      return new Geometry.Polygon(
+	[new Vertex(this.x, this.y),
+	 new Vertex(this.x + this.width, this.y),
+	 new Vertex(this.x + this.width, this.y + this.height),
+	 new Vertex(this.x, this.y + height)]);
+    }
   }
 }

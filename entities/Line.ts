@@ -14,5 +14,10 @@ module Entity {
       this.style = args.style;
       this.id = Utility.UUID();
     }
+
+    to_geo() {
+      return new Geometry.Polyline([new Vertex(this.start.x, this.start.y),
+				    new Vertex(this.end.x, this.end.y)]);
+    }
   }
 }
