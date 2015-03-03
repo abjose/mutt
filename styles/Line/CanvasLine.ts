@@ -14,8 +14,8 @@ module Style {
 	// probably make this into a function, like 'get_data'...
 	line[this.secret_place] = {};
 	line[this.secret_place].canvas = document.createElement('canvas');
-	line[this.secret_place].canvas.width = '1000';
-	line[this.secret_place].canvas.height = '1000';
+	line[this.secret_place].canvas.width = '500';
+	line[this.secret_place].canvas.height = '500';
 	line[this.secret_place].canvas.style.position = 'absolute';
 	document.body.appendChild(line[this.secret_place].canvas);
       }
