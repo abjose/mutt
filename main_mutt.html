@@ -16,11 +16,6 @@
 <script type="text/javascript" src="paw.js"></script>
 <script type="text/javascript" src="mutt.js"></script>
   <script>
-  // make sure to test out parent-child relation - make a grid of squares
-  // or something connected by lines! and then rotate and scale and stuff
-  // something like
-  // then can use grid to also test event stuff when do that
-
   var side = 10, gap = 10;
   var x_count = 10, y_count = 10;
   for (var x = 0; x < x_count; x++) {
@@ -29,6 +24,7 @@
       mutt.add(new Entity.Rectangle({x: xc, y: yc,
 				     width: side, height: side,
 				     style: 'div'}));
+      /*
       if (x != x_count-1)
 	mutt.add(new Entity.Line({start: new Entity.Point(xc+side+2,
 							  yc+side/2),
@@ -41,18 +37,18 @@
 				  end: new Entity.Point(xc+side/2,
 							yc+side+gap-2),
 				  style: 'canvas'}));
+      */
 
     }
   }
 
 
-// try rotating sub-part separately
+  // should try rotating sub-part separately
 
 
   mutt.scene.root.transform.scale(.75, .5);
   mutt.scene.root.transform.rotate(3.141 * 0.25);
   mutt.scene.root.transform.translate(150, 100);
-
   mutt.update();
   //mutt.remove(r2);
   //mutt.update();

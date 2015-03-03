@@ -1,20 +1,17 @@
 /// <reference path="libs/gl-matrix.d.ts" />
 /// <reference path="base/Transform.ts" />
+/// <reference path="base/Geometry.ts" />
 /// <reference path="paw.ts" />
 /// <reference path="utility/uuid.ts" />
 /// <reference path="base/Entity.ts" />
 /// <reference path="base/MultiIndex.ts" />
 /// <reference path="base/Style.ts" />
-/// <reference path="base/StyleManager.ts" />
 /// <reference path="base/Transform.ts" />
-/// <reference path="base/TransformHierarchy.ts" />
-/// <reference path="base/TransformStack.ts" />
 /// <reference path="entities/Line.ts" />
 /// <reference path="entities/Point.ts" />
 /// <reference path="entities/Rectangle.ts" />
 /// <reference path="styles/Rectangle/DivRect.ts" />
 /// <reference path="styles/Line/CanvasLine.ts" />
-
 
 /*
 TODO:
@@ -22,6 +19,12 @@ TODO:
 - reeeeeally need to improve canvas performance
   could group on render order, or even group everything that doesn't
   intersect another entity (if that's pretty fast)
+- interesting to allow StyleManager to have default styles rather than
+  forcing everything to be specified
+- take advantage of transform stack when drawing in mutt
+- should paw be 'folded in' to mutt?
+- for making transforms more convenient, could take advantage of globalness of
+  mutt - like rect.rotate(blah) could call mutt.scene.blah.blah
 
 Minimal steps to prototype bootstrapping interface-creator:
 - create woof so very easy to introspect/modify event settings
@@ -48,21 +51,28 @@ Remember - liked idea of get_children that could be defined separately by
 different entities. But would need to call something more specific considering
 number of interpretations of 'children'.
 
+Consider letting entities register themselves in the transform hierarchy. Then
+not stuck with 1:1 mapping between entities and transform nodes, and could do
+stranger stuff...each entity could keep track of multiple things in the
+scene graph (i.e. be a 'group'). And then don't need to add an artificial
+way of adding non-entity nodes to the scen graph?
+
 mutt 2du:
-- add spatial relation stuff to Rect and Line?
-  and now can use scene graph! so... spatial relation stuff will take
-  ...two entities in scene graph? or assume to be on one entity?
-  kinda like having spatial relation stuff defined externally, fits with 
-  theme...even if it's a theme you don't like that much...
+- add spatial relation stuff
 - add simple spatial query to MultiIndex
 - add clipping
 - make view
 - think about messenger stuff
 */
 
+/*
+mini-todo:
+- get demo working again
+*/
+
 var mutt = {
   entities: new Base.MultiIndex(),
-  scene: new Base.TransformHierarchy(),  // better name?
+  scene: new Base.TransformHierarchy(),
 
   update: function() {
     var entities_to_draw = this.entities.query();
@@ -74,14 +84,11 @@ var mutt = {
   },
   
   draw: function(entity) {
-    // sure you want this? Could just force all entities to define 'draw'
-    var has_draw = entity.draw != undefined;
-
     paw.transform.pushState();
-    //paw.transform.add(entity.transform);
     paw.transform.add(this.scene.transform_from_root(entity));
     
-    if (has_draw) {
+    // sure you want this? Could just force all entities to define 'draw'    
+    if (entity.draw != undefined) {
       entity.draw();
     } else {
       paw.draw(entity);
