@@ -116,7 +116,7 @@ module Geometry {
     }
   }
 
-  function nearest_pt_on_segment(a: Vertex, b: Vertex, pt: Point) {
+  function nearest_pt_on_segment(a: Vertex, b: Vertex, pt: Vertex) {
     // http://paulbourke.net/geometry/pointlineplane/
     // return the point on segment ab nearest to pt
     var u = (((pt.x-a.x)*(b.x-a.x) + (pt.y-a.y)*(b.y-a.y)) / dist_squared(a,b));
@@ -126,11 +126,11 @@ module Geometry {
     var xMax = Math.max(a.x, b.x);
     var yMin = Math.min(a.y, b.y);
     var yMax = Math.max(a.y, b.y);
-    return new Point(Math.max(Math.min(x, xMax), xMin),
-		     Math.max(Math.min(y, yMax), yMin));
+    return new Vertex(Math.max(Math.min(x, xMax), xMin),
+		      Math.max(Math.min(y, yMax), yMin));
   }
 
-  function distance_to_segment(a: Vertex, b: Vertex, pt: Point) {
+  function distance_to_segment(a: Vertex, b: Vertex, pt: Vertex) {
     return dist(pt, nearest_pt_on_segment(a, b, pt));
   }
 
