@@ -1,6 +1,6 @@
 module Geometry {
   enum PrimitiveType {vertex, polyline, polygon}
-  interface Primitive {
+  export interface Primitive {
     type: PrimitiveType;
     get_verts(): Vertex[];
   }
@@ -57,6 +57,7 @@ module Geometry {
   }
   
   export function distance(a: Primitive, b: Primitive) {
+    // nope, need to also consider distance to part of segment
     return min_dist(a.get_verts(), b.get_verts());
   }
   
@@ -115,6 +116,34 @@ module Geometry {
     }
   }
 
+  function nearest_pt_on_segment(a: Vertex, b: Vertex, pt: Point) {
+    // http://paulbourke.net/geometry/pointlineplane/
+    // return the point on segment ab nearest to pt
+    var u = (((pt.x-a.x)*(b.x-a.x) + (pt.y-a.y)*(b.y-a.y)) / dist_squared(a,b));
+    var x = a.x + u*(b.x - a.x);
+    var y = a.y + u*(b.y - a.y);
+    var xMin = Math.min(a.x, b.x);
+    var xMax = Math.max(a.x, b.x);
+    var yMin = Math.min(a.y, b.y);
+    var yMax = Math.max(a.y, b.y);
+    return new Point(Math.max(Math.min(x, xMax), xMin),
+		     Math.max(Math.min(y, yMax), yMin));
+  }
+
+  function distance_to_segment(a: Vertex, b: Vertex, pt: Point) {
+    return dist(pt, nearest_pt_on_segment(a, b, pt));
+  }
+
+  function distance_between_segments(a: Vertex, b: Vertex,
+				     c: Vertex, d: Vertex) {
+    // Minimum distance between ab and cd.
+    // lol, definitely a faster way, maybe on bourke's website.
+    return Math.min(distance_to_segment(a, b, c),
+		    distance_to_segment(a, b, d),
+		    distance_to_segment(c, d, a),
+		    distance_to_segment(c, d, b));
+  }
+
   function point_within(pt: Vertex, pts: Vertex[]) {
     // length - 1 because assumes includes start point twice...
     return Math.abs(sum_ccw(pt, pts)) == pts.length-1;
@@ -152,13 +181,10 @@ module Geometry {
   }
 
   function min_dist(a: Vertex[], b: Vertex[]) {
-    // TODO: replace this either with something that gets shortest distance
-    // between any two line segments, or allow representative points and just
-    // get distance between those.
     var distances = [];
-    for (var i = 0; i < a.length; i++)
-      for (var j = 0; j < b.length; j++)
-	distances.push(dist_squared(a[i], b[j]));
+    for (var i = 1; i < a.length; i++)
+      for (var j = 1; j < b.length; j++)
+	distances.push(distance_between_segments(a[i-1], a[i], b[j-1], b[j]));
     return Math.min.apply(null, distances);
   }
 }
