@@ -16,10 +16,10 @@ module Entity {
 
     to_geo() {
       return new Geometry.Polygon(
-	[new Vertex(this.x, this.y),
-	 new Vertex(this.x + this.width, this.y),
-	 new Vertex(this.x + this.width, this.y + this.height),
-	 new Vertex(this.x, this.y + height)]);
+	[new Geometry.Vertex(this.x, this.y),
+	 new Geometry.Vertex(this.x + this.width, this.y),
+	 new Geometry.Vertex(this.x + this.width, this.y + this.height),
+	 new Geometry.Vertex(this.x, this.y + this.height)]);
     }
   }
 }

@@ -1,11 +1,11 @@
 
 module Style {
   export class CanvasLine implements Base.Style<Entity.Line> {
-    style: string; entity: string;
+    style: string; type: string;
     secret_place: string;
     
     constructor() {
-      this.entity = 'line'; this.style = 'canvas';
+      this.type = 'line'; this.style = 'canvas';
       this.secret_place = 'STYLEDATA_' + this.style; // change this lol
     }
     

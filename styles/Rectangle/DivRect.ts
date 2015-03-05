@@ -1,10 +1,10 @@
 module Style {
   export class DivRect implements Base.Style<Entity.Rectangle> {
-    style: string; entity: string;
+    style: string; type: string;
     secret_place: string;
     
     constructor() {
-      this.entity = 'rect'; this.style = 'div';
+      this.type = 'rect'; this.style = 'div';
       this.secret_place = 'STYLEDATA_' + this.style; // change this lol
     }
     
